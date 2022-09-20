@@ -13,7 +13,7 @@
 
 Copy-paste this into your markdown content, and that's it. Simple!
 
-Based on [github-readme-stats](https://github.com/anuraghazra/github-readme-stats), I focused on showing GitHub contributor stats and applied typescript to the original project. Thanks to [@anuraghazra](https://github.com/anuraghazra) for the awesome open-source project!
+Based on [github-readme-stats](https://github.com/anuraghazra/github-readme-stats), I focused on showing GitHub contributor stats and applied typescript to the original project. Refer to [ISSUE#2027](https://github.com/anuraghazra/github-readme-stats/issues/2027). Thanks to [@anuraghazra](https://github.com/anuraghazra) for the awesome open-source project!
 
 Change the `?username=` value to your GitHub username.
 
@@ -25,7 +25,7 @@ Change the `?username=` value to your GitHub username.
 
 ![Taehyun's GitHub Contributor stats](https://github-contributor-stats.vercel.app/api?username=HwangTaehyun&hide=B)
 
-\_Note: Available ranks are S+ (over 1000), S (over 1000), A+ (over 500), A (over 100), B+ (over 50) and B (over 1).
+\_Note: Available ranks are S+ (over 10000), S (over 1000), A+ (over 500), A (over 100), B+ (over 50) and B (over 1).
 
 ### Hiding rank stats
 
