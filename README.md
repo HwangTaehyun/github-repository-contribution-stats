@@ -11,9 +11,9 @@
 
 # GitHub Contributor Stats Card
 
-Copy-paste this into your markdown content, and that's it. Simple!
+Copy and paste this into your markdown content, and that's it. Simple!
 
-Based on [github-readme-stats](https://github.com/anuraghazra/github-readme-stats), I focused on showing GitHub contributor stats and applied typescript to the original project. Refer to [ISSUE#2027](https://github.com/anuraghazra/github-readme-stats/issues/2027). Thanks to [@anuraghazra](https://github.com/anuraghazra) for the awesome open-source project!
+My project, which is based on [github-readme-stats](https://github.com/anuraghazra/github-readme-stats), focuses on showing GitHub contributor stats and applies the typescript to the original project. Refer to [ISSUE#2027](https://github.com/anuraghazra/github-readme-stats/issues/2027). Thank you [@anuraghazra](https://github.com/anuraghazra) for the awesome open-source project!
 
 Change the `?username=` value to your GitHub username.
 
