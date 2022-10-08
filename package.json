@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack --mode development --config webpack.common.js"
+    "build": "webpack --mode development --config webpack.common.js",
+    "start": "yarn build && node index.js"
   },
   "repository": {
     "type": "git",

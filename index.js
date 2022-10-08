@@ -25669,8 +25669,8 @@ const createTextNode = ({ imageBase64, name, rank, index, height }) => {
     const calculateTextWidth = (text) => {
         return (0,_common_utils__WEBPACK_IMPORTED_MODULE_2__.measureText)(text, 18);
     };
-    let offset = (0,_common_utils__WEBPACK_IMPORTED_MODULE_2__.clampValue)(calculateTextWidth(name), 150, 400);
-    offset += offset === 150 ? 0 : 10;
+    let offset = (0,_common_utils__WEBPACK_IMPORTED_MODULE_2__.clampValue)(calculateTextWidth(name), 180, 400);
+    offset += offset === 180 ? 5 : 15;
     const rankText = rank.includes('+')
         ? `<text x="4" y="18.5">
         ${rank}

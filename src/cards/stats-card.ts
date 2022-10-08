@@ -15,8 +15,8 @@ const createTextNode = ({ imageBase64, name, rank, index, height }) => {
   const calculateTextWidth = (text) => {
     return measureText(text, 18);
   };
-  let offset = clampValue(calculateTextWidth(name), 150, 400);
-  offset += offset === 150 ? 0 : 10;
+  let offset = clampValue(calculateTextWidth(name), 180, 400);
+  offset += offset === 180 ? 5 : 15;
 
   const rankText = rank.includes('+')
     ? `<text x="4" y="18.5">
