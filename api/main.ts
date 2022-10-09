@@ -7,6 +7,7 @@ import {
   renderError,
 } from '@/common/utils';
 import { fetchContributorStats } from '@/fetchContributorStats';
+import { isLocaleAvailable } from '@/translations';
 import express from 'express';
 
 // Initialize Express
@@ -29,10 +30,18 @@ app.get('/api', async (req, res) => {
     border_color,
     theme,
     cache_seconds,
+    locale,
   } = req.query;
   res.set('Content-Type', 'image/svg+xml');
+
+  if (locale && !isLocaleAvailable(locale)) {
+    return res.send(renderError('Something went wrong', 'Language not found'));
+  }
+
   try {
-    const contributorStats = await fetchContributorStats(username);
+    const result = await fetchContributorStats(username);
+    const name = result.name;
+    const contributorStats = result.repositoriesContributedTo.nodes;
 
     const cacheSeconds = clampValue(
       parseInt((cache_seconds as string) || CONSTANTS.FOUR_HOURS, 10),
@@ -43,7 +52,7 @@ app.get('/api', async (req, res) => {
     res.setHeader('Cache-Control', `public, max-age=${cacheSeconds}`);
 
     res.send(
-      await renderContributorStatsCard(contributorStats, {
+      await renderContributorStatsCard(name, contributorStats, {
         hide: parseArray(hide),
         hide_title: parseBoolean(hide_title),
         hide_border: parseBoolean(hide_border),
@@ -56,6 +65,7 @@ app.get('/api', async (req, res) => {
         border_radius,
         border_color,
         theme,
+        locale: locale ? (locale as string).toLowerCase() : null,
       }),
     );
   } catch (err: any) {

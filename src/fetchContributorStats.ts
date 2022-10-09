@@ -31,6 +31,7 @@ const fetchContributorStats = async (username) => {
         query: `query {
                   user(login: "${username}") {
                     id
+                    name
                     repositoriesContributedTo(first :100, contributionTypes: COMMIT) {
                       totalCount
                       nodes {
@@ -53,10 +54,8 @@ const fetchContributorStats = async (username) => {
     });
 
     if (response.status === 200) {
-      return response.data.data.user.repositoriesContributedTo.nodes;
+      return response.data.data.user;
     }
-
-    return {};
   } catch (error) {
     console.error(error);
     return error;

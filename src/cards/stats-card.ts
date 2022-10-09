@@ -1,5 +1,6 @@
 import { calculateRank } from '@/calculateRank';
 import { Card } from '@/common/Card';
+import { I18n } from '@/common/I18n';
 import {
   clampValue,
   flexLayout,
@@ -8,6 +9,7 @@ import {
   measureText,
 } from '@/common/utils';
 import { getStyles } from '@/getStyles';
+import { statCardLocales } from '@/translations';
 
 const createTextNode = ({ imageBase64, name, rank, index, height }) => {
   const staggerDelay = (index + 3) * 150;
@@ -48,6 +50,7 @@ const createTextNode = ({ imageBase64, name, rank, index, height }) => {
 };
 
 export const renderContributorStatsCard = async (
+  name,
   contributorStats = [] as any,
   options = {} as any,
 ) => {
@@ -64,6 +67,7 @@ export const renderContributorStatsCard = async (
     border_color,
     custom_title,
     theme = 'default',
+    locale,
   } = options;
 
   const lheight = parseInt(String(line_height), 10);
@@ -76,6 +80,12 @@ export const renderContributorStatsCard = async (
     bg_color,
     border_color,
     theme,
+  });
+
+  const apostrophe = ['x', 's'].includes(name.slice(-1).toLocaleLowerCase()) ? '' : 's';
+  const i18n = new I18n({
+    locale,
+    translations: statCardLocales({ name, apostrophe }),
   });
 
   const imageBase64s = await Promise.all(
@@ -124,7 +134,7 @@ export const renderContributorStatsCard = async (
 
   const card = new Card({
     customTitle: custom_title,
-    defaultTitle: 'Github Contributor Stats',
+    defaultTitle: i18n.t('statcard.title'),
     titlePrefixIcon: '',
     width,
     height,
