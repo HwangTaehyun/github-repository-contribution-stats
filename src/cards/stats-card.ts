@@ -41,9 +41,9 @@ const createTextNode = ({ imageBase64, name, rank, index, height }) => {
       </g>
       <g data-testid="rank-circle" transform="translate(${offset}, 0)">
         <circle class="rank-circle-rim" cx="14" cy="14" r="14" />
-        <g class="rank-text">
-          ${rankText}
-        </g>
+        <text x="14" y="14" class="rank-text" alignment-baseline="middle" text-anchor="middle">
+          ${rank}
+        </text>
       </g>
     </g>
   `;
