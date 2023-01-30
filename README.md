@@ -53,10 +53,23 @@ You can look at a preview for [all available themes](./themes/README.md) or chec
 
 > Note: The minimum of cache_seconds is currently 4 hours as a temporary fix for PATs exhaustion.
 
+## :sparkling_heart: Support the project
+
+I open-source almost everything I can and try to reply to everyone needing help using these projects. Obviously,
+this takes time. You can use this service for free.
+
+However, if you are using this project and are happy with it or just want to encourage me to continue creating stuff, there are a few ways you can do it:
+
+-   Starring and sharing the project :rocket:
+-   You can make one-time donations via buymeacoffee. I'll probably buy a coffee! :coffee:
+
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/eeht17173)
+
+Thanks! :heart:
+
+## Contribution
+
 Contributions are welcome!
 
 Made with :fire: and TypeScript.
 
-## 🙋‍♂️ Support
-
-❤️  If you like this project, give it a ⭐ and share it with friends!
