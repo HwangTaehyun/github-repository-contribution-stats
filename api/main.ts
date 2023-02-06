@@ -7,6 +7,7 @@ import {
   renderError,
 } from '@/common/utils';
 import { fetchContributorStats } from '@/fetchContributorStats';
+import { fetchAllContributorStats } from '@/fetchAllContributorStats';
 import { isLocaleAvailable } from '@/translations';
 import express from 'express';
 
@@ -31,6 +32,7 @@ app.get('/api', async (req, res) => {
     theme,
     cache_seconds,
     locale,
+    combine_all_yearly_contributions,
   } = req.query;
   res.set('Content-Type', 'image/svg+xml');
 
@@ -39,7 +41,10 @@ app.get('/api', async (req, res) => {
   }
 
   try {
-    const result = await fetchContributorStats(username);
+    const result = await (combine_all_yearly_contributions
+      ? fetchAllContributorStats(username)
+      : fetchContributorStats(username));
+    console.log(result)
     const name = result.name;
     const contributorStats = result.repositoriesContributedTo.nodes;
 
