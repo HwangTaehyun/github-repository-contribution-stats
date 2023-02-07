@@ -5345,6 +5345,616 @@ CombinedStream.prototype._emitError = function(err) {
 
 /***/ }),
 
+/***/ "./node_modules/compressible/index.js":
+/*!********************************************!*\
+  !*** ./node_modules/compressible/index.js ***!
+  \********************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+/*!
+ * compressible
+ * Copyright(c) 2013 Jonathan Ong
+ * Copyright(c) 2014 Jeremiah Senkpiel
+ * Copyright(c) 2015 Douglas Christopher Wilson
+ * MIT Licensed
+ */
+
+
+
+/**
+ * Module dependencies.
+ * @private
+ */
+
+var db = __webpack_require__(/*! mime-db */ "./node_modules/mime-db/index.js")
+
+/**
+ * Module variables.
+ * @private
+ */
+
+var COMPRESSIBLE_TYPE_REGEXP = /^text\/|\+(?:json|text|xml)$/i
+var EXTRACT_TYPE_REGEXP = /^\s*([^;\s]*)(?:;|\s|$)/
+
+/**
+ * Module exports.
+ * @public
+ */
+
+module.exports = compressible
+
+/**
+ * Checks if a type is compressible.
+ *
+ * @param {string} type
+ * @return {Boolean} compressible
+ * @public
+ */
+
+function compressible (type) {
+  if (!type || typeof type !== 'string') {
+    return false
+  }
+
+  // strip parameters
+  var match = EXTRACT_TYPE_REGEXP.exec(type)
+  var mime = match && match[1].toLowerCase()
+  var data = db[mime]
+
+  // return database information
+  if (data && data.compressible !== undefined) {
+    return data.compressible
+  }
+
+  // fallback to regexp or unknown
+  return COMPRESSIBLE_TYPE_REGEXP.test(mime) || undefined
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/compression/index.js":
+/*!*******************************************!*\
+  !*** ./node_modules/compression/index.js ***!
+  \*******************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+/*!
+ * compression
+ * Copyright(c) 2010 Sencha Inc.
+ * Copyright(c) 2011 TJ Holowaychuk
+ * Copyright(c) 2014 Jonathan Ong
+ * Copyright(c) 2014-2015 Douglas Christopher Wilson
+ * MIT Licensed
+ */
+
+
+
+/**
+ * Module dependencies.
+ * @private
+ */
+
+var accepts = __webpack_require__(/*! accepts */ "./node_modules/accepts/index.js")
+var Buffer = (__webpack_require__(/*! safe-buffer */ "./node_modules/compression/node_modules/safe-buffer/index.js").Buffer)
+var bytes = __webpack_require__(/*! bytes */ "./node_modules/compression/node_modules/bytes/index.js")
+var compressible = __webpack_require__(/*! compressible */ "./node_modules/compressible/index.js")
+var debug = __webpack_require__(/*! debug */ "./node_modules/debug/src/index.js")('compression')
+var onHeaders = __webpack_require__(/*! on-headers */ "./node_modules/on-headers/index.js")
+var vary = __webpack_require__(/*! vary */ "./node_modules/vary/index.js")
+var zlib = __webpack_require__(/*! zlib */ "zlib")
+
+/**
+ * Module exports.
+ */
+
+module.exports = compression
+module.exports.filter = shouldCompress
+
+/**
+ * Module variables.
+ * @private
+ */
+
+var cacheControlNoTransformRegExp = /(?:^|,)\s*?no-transform\s*?(?:,|$)/
+
+/**
+ * Compress response data with gzip / deflate.
+ *
+ * @param {Object} [options]
+ * @return {Function} middleware
+ * @public
+ */
+
+function compression (options) {
+  var opts = options || {}
+
+  // options
+  var filter = opts.filter || shouldCompress
+  var threshold = bytes.parse(opts.threshold)
+
+  if (threshold == null) {
+    threshold = 1024
+  }
+
+  return function compression (req, res, next) {
+    var ended = false
+    var length
+    var listeners = []
+    var stream
+
+    var _end = res.end
+    var _on = res.on
+    var _write = res.write
+
+    // flush
+    res.flush = function flush () {
+      if (stream) {
+        stream.flush()
+      }
+    }
+
+    // proxy
+
+    res.write = function write (chunk, encoding) {
+      if (ended) {
+        return false
+      }
+
+      if (!this._header) {
+        this._implicitHeader()
+      }
+
+      return stream
+        ? stream.write(toBuffer(chunk, encoding))
+        : _write.call(this, chunk, encoding)
+    }
+
+    res.end = function end (chunk, encoding) {
+      if (ended) {
+        return false
+      }
+
+      if (!this._header) {
+        // estimate the length
+        if (!this.getHeader('Content-Length')) {
+          length = chunkLength(chunk, encoding)
+        }
+
+        this._implicitHeader()
+      }
+
+      if (!stream) {
+        return _end.call(this, chunk, encoding)
+      }
+
+      // mark ended
+      ended = true
+
+      // write Buffer for Node.js 0.8
+      return chunk
+        ? stream.end(toBuffer(chunk, encoding))
+        : stream.end()
+    }
+
+    res.on = function on (type, listener) {
+      if (!listeners || type !== 'drain') {
+        return _on.call(this, type, listener)
+      }
+
+      if (stream) {
+        return stream.on(type, listener)
+      }
+
+      // buffer listeners for future stream
+      listeners.push([type, listener])
+
+      return this
+    }
+
+    function nocompress (msg) {
+      debug('no compression: %s', msg)
+      addListeners(res, _on, listeners)
+      listeners = null
+    }
+
+    onHeaders(res, function onResponseHeaders () {
+      // determine if request is filtered
+      if (!filter(req, res)) {
+        nocompress('filtered')
+        return
+      }
+
+      // determine if the entity should be transformed
+      if (!shouldTransform(req, res)) {
+        nocompress('no transform')
+        return
+      }
+
+      // vary
+      vary(res, 'Accept-Encoding')
+
+      // content-length below threshold
+      if (Number(res.getHeader('Content-Length')) < threshold || length < threshold) {
+        nocompress('size below threshold')
+        return
+      }
+
+      var encoding = res.getHeader('Content-Encoding') || 'identity'
+
+      // already encoded
+      if (encoding !== 'identity') {
+        nocompress('already encoded')
+        return
+      }
+
+      // head
+      if (req.method === 'HEAD') {
+        nocompress('HEAD request')
+        return
+      }
+
+      // compression method
+      var accept = accepts(req)
+      var method = accept.encoding(['gzip', 'deflate', 'identity'])
+
+      // we really don't prefer deflate
+      if (method === 'deflate' && accept.encoding(['gzip'])) {
+        method = accept.encoding(['gzip', 'identity'])
+      }
+
+      // negotiation failed
+      if (!method || method === 'identity') {
+        nocompress('not acceptable')
+        return
+      }
+
+      // compression stream
+      debug('%s compression', method)
+      stream = method === 'gzip'
+        ? zlib.createGzip(opts)
+        : zlib.createDeflate(opts)
+
+      // add buffered listeners to stream
+      addListeners(stream, stream.on, listeners)
+
+      // header fields
+      res.setHeader('Content-Encoding', method)
+      res.removeHeader('Content-Length')
+
+      // compression
+      stream.on('data', function onStreamData (chunk) {
+        if (_write.call(res, chunk) === false) {
+          stream.pause()
+        }
+      })
+
+      stream.on('end', function onStreamEnd () {
+        _end.call(res)
+      })
+
+      _on.call(res, 'drain', function onResponseDrain () {
+        stream.resume()
+      })
+    })
+
+    next()
+  }
+}
+
+/**
+ * Add bufferred listeners to stream
+ * @private
+ */
+
+function addListeners (stream, on, listeners) {
+  for (var i = 0; i < listeners.length; i++) {
+    on.apply(stream, listeners[i])
+  }
+}
+
+/**
+ * Get the length of a given chunk
+ */
+
+function chunkLength (chunk, encoding) {
+  if (!chunk) {
+    return 0
+  }
+
+  return !Buffer.isBuffer(chunk)
+    ? Buffer.byteLength(chunk, encoding)
+    : chunk.length
+}
+
+/**
+ * Default filter function.
+ * @private
+ */
+
+function shouldCompress (req, res) {
+  var type = res.getHeader('Content-Type')
+
+  if (type === undefined || !compressible(type)) {
+    debug('%s not compressible', type)
+    return false
+  }
+
+  return true
+}
+
+/**
+ * Determine if the entity should be transformed.
+ * @private
+ */
+
+function shouldTransform (req, res) {
+  var cacheControl = res.getHeader('Cache-Control')
+
+  // Don't compress for Cache-Control: no-transform
+  // https://tools.ietf.org/html/rfc7234#section-5.2.2.4
+  return !cacheControl ||
+    !cacheControlNoTransformRegExp.test(cacheControl)
+}
+
+/**
+ * Coerce arguments to Buffer
+ * @private
+ */
+
+function toBuffer (chunk, encoding) {
+  return !Buffer.isBuffer(chunk)
+    ? Buffer.from(chunk, encoding)
+    : chunk
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/compression/node_modules/bytes/index.js":
+/*!**************************************************************!*\
+  !*** ./node_modules/compression/node_modules/bytes/index.js ***!
+  \**************************************************************/
+/***/ ((module) => {
+
+"use strict";
+/*!
+ * bytes
+ * Copyright(c) 2012-2014 TJ Holowaychuk
+ * Copyright(c) 2015 Jed Watson
+ * MIT Licensed
+ */
+
+
+
+/**
+ * Module exports.
+ * @public
+ */
+
+module.exports = bytes;
+module.exports.format = format;
+module.exports.parse = parse;
+
+/**
+ * Module variables.
+ * @private
+ */
+
+var formatThousandsRegExp = /\B(?=(\d{3})+(?!\d))/g;
+
+var formatDecimalsRegExp = /(?:\.0*|(\.[^0]+)0+)$/;
+
+var map = {
+  b:  1,
+  kb: 1 << 10,
+  mb: 1 << 20,
+  gb: 1 << 30,
+  tb: ((1 << 30) * 1024)
+};
+
+var parseRegExp = /^((-|\+)?(\d+(?:\.\d+)?)) *(kb|mb|gb|tb)$/i;
+
+/**
+ * Convert the given value in bytes into a string or parse to string to an integer in bytes.
+ *
+ * @param {string|number} value
+ * @param {{
+ *  case: [string],
+ *  decimalPlaces: [number]
+ *  fixedDecimals: [boolean]
+ *  thousandsSeparator: [string]
+ *  unitSeparator: [string]
+ *  }} [options] bytes options.
+ *
+ * @returns {string|number|null}
+ */
+
+function bytes(value, options) {
+  if (typeof value === 'string') {
+    return parse(value);
+  }
+
+  if (typeof value === 'number') {
+    return format(value, options);
+  }
+
+  return null;
+}
+
+/**
+ * Format the given value in bytes into a string.
+ *
+ * If the value is negative, it is kept as such. If it is a float,
+ * it is rounded.
+ *
+ * @param {number} value
+ * @param {object} [options]
+ * @param {number} [options.decimalPlaces=2]
+ * @param {number} [options.fixedDecimals=false]
+ * @param {string} [options.thousandsSeparator=]
+ * @param {string} [options.unit=]
+ * @param {string} [options.unitSeparator=]
+ *
+ * @returns {string|null}
+ * @public
+ */
+
+function format(value, options) {
+  if (!Number.isFinite(value)) {
+    return null;
+  }
+
+  var mag = Math.abs(value);
+  var thousandsSeparator = (options && options.thousandsSeparator) || '';
+  var unitSeparator = (options && options.unitSeparator) || '';
+  var decimalPlaces = (options && options.decimalPlaces !== undefined) ? options.decimalPlaces : 2;
+  var fixedDecimals = Boolean(options && options.fixedDecimals);
+  var unit = (options && options.unit) || '';
+
+  if (!unit || !map[unit.toLowerCase()]) {
+    if (mag >= map.tb) {
+      unit = 'TB';
+    } else if (mag >= map.gb) {
+      unit = 'GB';
+    } else if (mag >= map.mb) {
+      unit = 'MB';
+    } else if (mag >= map.kb) {
+      unit = 'KB';
+    } else {
+      unit = 'B';
+    }
+  }
+
+  var val = value / map[unit.toLowerCase()];
+  var str = val.toFixed(decimalPlaces);
+
+  if (!fixedDecimals) {
+    str = str.replace(formatDecimalsRegExp, '$1');
+  }
+
+  if (thousandsSeparator) {
+    str = str.replace(formatThousandsRegExp, thousandsSeparator);
+  }
+
+  return str + unitSeparator + unit;
+}
+
+/**
+ * Parse the string value into an integer in bytes.
+ *
+ * If no unit is given, it is assumed the value is in bytes.
+ *
+ * @param {number|string} val
+ *
+ * @returns {number|null}
+ * @public
+ */
+
+function parse(val) {
+  if (typeof val === 'number' && !isNaN(val)) {
+    return val;
+  }
+
+  if (typeof val !== 'string') {
+    return null;
+  }
+
+  // Test if the string passed is valid
+  var results = parseRegExp.exec(val);
+  var floatValue;
+  var unit = 'b';
+
+  if (!results) {
+    // Nothing could be extracted from the given string
+    floatValue = parseInt(val, 10);
+    unit = 'b'
+  } else {
+    // Retrieve the value and the unit
+    floatValue = parseFloat(results[1]);
+    unit = results[4].toLowerCase();
+  }
+
+  return Math.floor(map[unit] * floatValue);
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/compression/node_modules/safe-buffer/index.js":
+/*!********************************************************************!*\
+  !*** ./node_modules/compression/node_modules/safe-buffer/index.js ***!
+  \********************************************************************/
+/***/ ((module, exports, __webpack_require__) => {
+
+/* eslint-disable node/no-deprecated-api */
+var buffer = __webpack_require__(/*! buffer */ "buffer")
+var Buffer = buffer.Buffer
+
+// alternative to using Object.keys for old browsers
+function copyProps (src, dst) {
+  for (var key in src) {
+    dst[key] = src[key]
+  }
+}
+if (Buffer.from && Buffer.alloc && Buffer.allocUnsafe && Buffer.allocUnsafeSlow) {
+  module.exports = buffer
+} else {
+  // Copy properties from require('buffer')
+  copyProps(buffer, exports)
+  exports.Buffer = SafeBuffer
+}
+
+function SafeBuffer (arg, encodingOrOffset, length) {
+  return Buffer(arg, encodingOrOffset, length)
+}
+
+// Copy static methods from Buffer
+copyProps(Buffer, SafeBuffer)
+
+SafeBuffer.from = function (arg, encodingOrOffset, length) {
+  if (typeof arg === 'number') {
+    throw new TypeError('Argument must not be a number')
+  }
+  return Buffer(arg, encodingOrOffset, length)
+}
+
+SafeBuffer.alloc = function (size, fill, encoding) {
+  if (typeof size !== 'number') {
+    throw new TypeError('Argument must be a number')
+  }
+  var buf = Buffer(size)
+  if (fill !== undefined) {
+    if (typeof encoding === 'string') {
+      buf.fill(fill, encoding)
+    } else {
+      buf.fill(fill)
+    }
+  } else {
+    buf.fill(0)
+  }
+  return buf
+}
+
+SafeBuffer.allocUnsafe = function (size) {
+  if (typeof size !== 'number') {
+    throw new TypeError('Argument must be a number')
+  }
+  return Buffer(size)
+}
+
+SafeBuffer.allocUnsafeSlow = function (size) {
+  if (typeof size !== 'number') {
+    throw new TypeError('Argument must be a number')
+  }
+  return buffer.SlowBuffer(size)
+}
+
+
+/***/ }),
+
 /***/ "./node_modules/content-disposition/index.js":
 /*!***************************************************!*\
   !*** ./node_modules/content-disposition/index.js ***!
@@ -21458,6 +22068,149 @@ function wrap (fn) {
 
 /***/ }),
 
+/***/ "./node_modules/on-headers/index.js":
+/*!******************************************!*\
+  !*** ./node_modules/on-headers/index.js ***!
+  \******************************************/
+/***/ ((module) => {
+
+"use strict";
+/*!
+ * on-headers
+ * Copyright(c) 2014 Douglas Christopher Wilson
+ * MIT Licensed
+ */
+
+
+
+/**
+ * Module exports.
+ * @public
+ */
+
+module.exports = onHeaders
+
+/**
+ * Create a replacement writeHead method.
+ *
+ * @param {function} prevWriteHead
+ * @param {function} listener
+ * @private
+ */
+
+function createWriteHead (prevWriteHead, listener) {
+  var fired = false
+
+  // return function with core name and argument list
+  return function writeHead (statusCode) {
+    // set headers from arguments
+    var args = setWriteHeadHeaders.apply(this, arguments)
+
+    // fire listener
+    if (!fired) {
+      fired = true
+      listener.call(this)
+
+      // pass-along an updated status code
+      if (typeof args[0] === 'number' && this.statusCode !== args[0]) {
+        args[0] = this.statusCode
+        args.length = 1
+      }
+    }
+
+    return prevWriteHead.apply(this, args)
+  }
+}
+
+/**
+ * Execute a listener when a response is about to write headers.
+ *
+ * @param {object} res
+ * @return {function} listener
+ * @public
+ */
+
+function onHeaders (res, listener) {
+  if (!res) {
+    throw new TypeError('argument res is required')
+  }
+
+  if (typeof listener !== 'function') {
+    throw new TypeError('argument listener must be a function')
+  }
+
+  res.writeHead = createWriteHead(res.writeHead, listener)
+}
+
+/**
+ * Set headers contained in array on the response object.
+ *
+ * @param {object} res
+ * @param {array} headers
+ * @private
+ */
+
+function setHeadersFromArray (res, headers) {
+  for (var i = 0; i < headers.length; i++) {
+    res.setHeader(headers[i][0], headers[i][1])
+  }
+}
+
+/**
+ * Set headers contained in object on the response object.
+ *
+ * @param {object} res
+ * @param {object} headers
+ * @private
+ */
+
+function setHeadersFromObject (res, headers) {
+  var keys = Object.keys(headers)
+  for (var i = 0; i < keys.length; i++) {
+    var k = keys[i]
+    if (k) res.setHeader(k, headers[k])
+  }
+}
+
+/**
+ * Set headers and other properties on the response object.
+ *
+ * @param {number} statusCode
+ * @private
+ */
+
+function setWriteHeadHeaders (statusCode) {
+  var length = arguments.length
+  var headerIndex = length > 1 && typeof arguments[1] === 'string'
+    ? 2
+    : 1
+
+  var headers = length >= headerIndex + 1
+    ? arguments[headerIndex]
+    : undefined
+
+  this.statusCode = statusCode
+
+  if (Array.isArray(headers)) {
+    // handle array case
+    setHeadersFromArray(this, headers)
+  } else if (headers) {
+    // handle object case
+    setHeadersFromObject(this, headers)
+  }
+
+  // copy leading arguments
+  var args = new Array(Math.min(length, headerIndex))
+  for (var i = 0; i < args.length; i++) {
+    args[i] = arguments[i]
+  }
+
+  return args
+}
+
+
+/***/ }),
+
 /***/ "./node_modules/parseurl/index.js":
 /*!****************************************!*\
   !*** ./node_modules/parseurl/index.js ***!
@@ -35506,6 +36259,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _translations__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @/translations */ "./src/translations.ts");
 /* harmony import */ var express__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! express */ "./node_modules/express/index.js");
 /* harmony import */ var express__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(express__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var compression__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! compression */ "./node_modules/compression/index.js");
+/* harmony import */ var compression__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(compression__WEBPACK_IMPORTED_MODULE_6__);
+
 
 
 
@@ -35513,6 +36269,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 const app = express__WEBPACK_IMPORTED_MODULE_5___default()();
+app.use(compression__WEBPACK_IMPORTED_MODULE_6___default()());
 app.get('/api', async (req, res) => {
     const { username, hide, hide_title, hide_border, line_height, title_color, icon_color, text_color, bg_color, custom_title, border_radius, border_color, theme, cache_seconds, locale, combine_all_yearly_contributions, } = req.query;
     res.set('Content-Type', 'image/svg+xml');
@@ -35523,7 +36280,6 @@ app.get('/api', async (req, res) => {
         const result = await (combine_all_yearly_contributions
             ? (0,_fetchAllContributorStats__WEBPACK_IMPORTED_MODULE_3__.fetchAllContributorStats)(username)
             : (0,_fetchContributorStats__WEBPACK_IMPORTED_MODULE_2__.fetchContributorStats)(username));
-        console.log(result);
         const name = result.name;
         const contributorStats = result.repositoriesContributedTo.nodes;
         const cacheSeconds = (0,_common_utils__WEBPACK_IMPORTED_MODULE_1__.clampValue)(parseInt(cache_seconds || _common_utils__WEBPACK_IMPORTED_MODULE_1__.CONSTANTS.FOUR_HOURS, 10), _common_utils__WEBPACK_IMPORTED_MODULE_1__.CONSTANTS.FOUR_HOURS, _common_utils__WEBPACK_IMPORTED_MODULE_1__.CONSTANTS.ONE_DAY);
