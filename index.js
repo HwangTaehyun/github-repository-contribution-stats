@@ -26472,7 +26472,9 @@ const renderContributorStatsCard = async (name, contributorStats = [], options =
         translations: (0,_translations__WEBPACK_IMPORTED_MODULE_5__.statCardLocales)({ name, apostrophe }),
     });
     const imageBase64s = await Promise.all(Object.keys(contributorStats).map((key, index) => {
-        return (0,_common_utils__WEBPACK_IMPORTED_MODULE_3__.getImageBase64FromURL)(contributorStats[key].owner.avatarUrl);
+        const url = new URL(contributorStats[key].owner.avatarUrl);
+        url.searchParams.append("s", "50");
+        return (0,_common_utils__WEBPACK_IMPORTED_MODULE_3__.getImageBase64FromURL)(url.toString());
     }));
     const transformedContributorStats = contributorStats
         .map((contributorStat, index) => {
