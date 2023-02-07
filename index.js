@@ -27065,7 +27065,7 @@ const fetchContributorStats = async (username) => {
             },
             data: {
                 query: `query {
-                  user(login: "${username}") {
+                  user(login: ${JSON.stringify(username)}) {
                     id
                     name
                     repositoriesContributedTo(first :100, contributionTypes: COMMIT) {
