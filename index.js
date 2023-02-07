@@ -26207,6 +26207,85 @@ const getImageBase64FromURL = async (url) => {
 
 /***/ }),
 
+/***/ "./src/fetchAllContributorStats.ts":
+/*!*****************************************!*\
+  !*** ./src/fetchAllContributorStats.ts ***!
+  \*****************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "fetchAllContributorStats": () => (/* binding */ fetchAllContributorStats)
+/* harmony export */ });
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_0__);
+
+async function fetchAllContributorStats(username) {
+    const { data: { data: { user: { id, name, contributionsCollection: { contributionYears }, }, }, }, } = await axios__WEBPACK_IMPORTED_MODULE_0___default()({
+        url: 'https://api.github.com/graphql',
+        method: 'POST',
+        headers: {
+            Authorization: `token ${process.env.GITHUB_PERSONAL_ACCESS_TOKEN}`,
+        },
+        validateStatus: (status) => status == 200,
+        data: {
+            query: `query {
+          user(login: "${username}") {
+            id
+            name
+            contributionsCollection {
+              contributionYears
+            }
+          }
+        }`,
+        },
+    });
+    return {
+        id,
+        name,
+        repositoriesContributedTo: {
+            nodes: Object.values(Object.fromEntries((await Promise.all(contributionYears.map((contributionYear) => axios__WEBPACK_IMPORTED_MODULE_0___default()({
+                url: 'https://api.github.com/graphql',
+                method: 'POST',
+                headers: {
+                    Authorization: `token ${process.env.GITHUB_PERSONAL_ACCESS_TOKEN}`,
+                },
+                validateStatus: (status) => status == 200,
+                data: {
+                    query: `query {
+                      user(login: ${JSON.stringify(username)}) {
+                        contributionsCollection(from: "${contributionYear}-01-01T00:00:00Z") {
+                          commitContributionsByRepository(maxRepositories: 100) {
+                            repository {
+                              owner {
+                                id
+                                avatarUrl
+                              }
+                              isInOrganization
+                              url
+                              homepageUrl
+                              name
+                              nameWithOwner
+                              stargazerCount
+                              openGraphImageUrl
+                            }
+                          }
+                        }
+                      }
+                    }`,
+                },
+            })))).flatMap(({ data: { data: { user: { contributionsCollection: { commitContributionsByRepository }, }, }, }, }) => commitContributionsByRepository.map(({ repository }) => [
+                repository.nameWithOwner,
+                repository,
+            ])))),
+        },
+    };
+}
+
+
+/***/ }),
+
 /***/ "./src/fetchContributorStats.ts":
 /*!**************************************!*\
   !*** ./src/fetchContributorStats.ts ***!
@@ -35423,23 +35502,28 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _cards_stats_card__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @/cards/stats-card */ "./src/cards/stats-card.ts");
 /* harmony import */ var _common_utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @/common/utils */ "./src/common/utils.ts");
 /* harmony import */ var _fetchContributorStats__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @/fetchContributorStats */ "./src/fetchContributorStats.ts");
-/* harmony import */ var _translations__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @/translations */ "./src/translations.ts");
-/* harmony import */ var express__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! express */ "./node_modules/express/index.js");
-/* harmony import */ var express__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(express__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _fetchAllContributorStats__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @/fetchAllContributorStats */ "./src/fetchAllContributorStats.ts");
+/* harmony import */ var _translations__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @/translations */ "./src/translations.ts");
+/* harmony import */ var express__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! express */ "./node_modules/express/index.js");
+/* harmony import */ var express__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(express__WEBPACK_IMPORTED_MODULE_5__);
 
 
 
 
 
-const app = express__WEBPACK_IMPORTED_MODULE_4___default()();
+
+const app = express__WEBPACK_IMPORTED_MODULE_5___default()();
 app.get('/api', async (req, res) => {
-    const { username, hide, hide_title, hide_border, line_height, title_color, icon_color, text_color, bg_color, custom_title, border_radius, border_color, theme, cache_seconds, locale, } = req.query;
+    const { username, hide, hide_title, hide_border, line_height, title_color, icon_color, text_color, bg_color, custom_title, border_radius, border_color, theme, cache_seconds, locale, combine_all_yearly_contributions, } = req.query;
     res.set('Content-Type', 'image/svg+xml');
-    if (locale && !(0,_translations__WEBPACK_IMPORTED_MODULE_3__.isLocaleAvailable)(locale)) {
+    if (locale && !(0,_translations__WEBPACK_IMPORTED_MODULE_4__.isLocaleAvailable)(locale)) {
         return res.send((0,_common_utils__WEBPACK_IMPORTED_MODULE_1__.renderError)('Something went wrong', 'Language not found'));
     }
     try {
-        const result = await (0,_fetchContributorStats__WEBPACK_IMPORTED_MODULE_2__.fetchContributorStats)(username);
+        const result = await (combine_all_yearly_contributions
+            ? (0,_fetchAllContributorStats__WEBPACK_IMPORTED_MODULE_3__.fetchAllContributorStats)(username)
+            : (0,_fetchContributorStats__WEBPACK_IMPORTED_MODULE_2__.fetchContributorStats)(username));
+        console.log(result);
         const name = result.name;
         const contributorStats = result.repositoriesContributedTo.nodes;
         const cacheSeconds = (0,_common_utils__WEBPACK_IMPORTED_MODULE_1__.clampValue)(parseInt(cache_seconds || _common_utils__WEBPACK_IMPORTED_MODULE_1__.CONSTANTS.FOUR_HOURS, 10), _common_utils__WEBPACK_IMPORTED_MODULE_1__.CONSTANTS.FOUR_HOURS, _common_utils__WEBPACK_IMPORTED_MODULE_1__.CONSTANTS.ONE_DAY);
