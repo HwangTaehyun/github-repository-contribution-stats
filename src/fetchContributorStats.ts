@@ -13,7 +13,8 @@ import axios from 'axios';
 /**
  * The Fetch Contributor Stats Function.
  *
- * This function holds the request for the github graphql APIs.
+ * This function holds the request for the github graphql APIs, which includes
+ * recent commit contributions.
  *
  * @param {String} username The target github username for contribution stats.
  *

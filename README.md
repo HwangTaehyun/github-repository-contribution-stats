@@ -35,6 +35,13 @@ To hide specific ranks, you can pass a query parameter `&hide=` with comma-separ
 ![Taehyun's GitHub Repository Contribution stats](https://github-contributor-stats.vercel.app/api?username=HwangTaehyun&hide=B,B%2B)
 ```
 
+### Including all contributions, not only recent contributions
+By default, the card is generated from GitHub's GraphQL API `repositoriesContributedTo`, which only includes recent contributions. To include all contributions, add `&combine_all_yearly_contributions=true` query parameter, which will let the card be generated from GitHub's GraphQL API `contributionsCollection`, including all contributions.
+
+```md
+![Taehyun's GitHub Repository Contribution stats](https://github-contributor-stats.vercel.app/api?username=HwangTaehyun&combine_all_yearly_contributions=true)
+```
+
 ### Themes
 
 With inbuilt themes, you can customize the look of the card without doing any [manual customization](#customization).
