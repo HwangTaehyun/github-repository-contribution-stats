@@ -1,9 +1,6 @@
 // @ts-check
-// import imageToBase64 from 'image-to-base64';
-import imageToBase64 from 'image-to-base64/browser';
 import { themes } from 'themes';
 import fetch from 'node-fetch';
-import FileReader from 'filereader';
 
 /**
  * @param {string} message
@@ -341,13 +338,3 @@ function chunkArray(arr, perChunk) {
   }, []);
 }
 
-export const getImageBase64FromURL = async (url: string) => {
-  const imageURLData = await fetch(url);
-  const buffer = await imageURLData.arrayBuffer();
-  const stringifiedBuffer = Buffer.from(buffer).toString('base64');
-  const contentType = imageURLData.headers.get('content-type');
-  const imageBase64 = `data:image/${contentType};base64,${stringifiedBuffer}`;
-  return new Promise((resolve) => {
-    resolve(imageBase64);
-  });
-};

@@ -5,13 +5,13 @@ import {
   clampValue,
   flexLayout,
   getCardColors,
-  getImageBase64FromURL,
   measureText,
 } from '@/common/utils';
 import { getStyles } from '@/getStyles';
 import { statCardLocales } from '@/translations';
+import escapeHTML from 'escape-html';
 
-const createTextNode = ({ imageBase64, name, rank, index, height }) => {
+const createTextNode = ({ imageUrl, name, rank, index, height }) => {
   const staggerDelay = (index + 3) * 150;
 
   const calculateTextWidth = (text) => {
@@ -35,7 +35,7 @@ const createTextNode = ({ imageBase64, name, rank, index, height }) => {
           <circle cx="12.5" cy="12.5" r="12.5" fill="#FFFFFF" />
         </clipPath>
       </defs>
-      <image xlink:href="${imageBase64}" width="25" height="25" clip-path="url(#myCircle)"/>
+      <image xlink:href="${escapeHTML(imageUrl)}" width="25" height="25" clip-path="url(#myCircle)"/>
       <g transform="translate(30,16)">
         <text class="stat bold">${name}</text>
       </g>
@@ -88,18 +88,16 @@ export const renderContributorStatsCard = async (
     translations: statCardLocales({ name, apostrophe }),
   });
 
-  const imageBase64s = await Promise.all(
-    Object.keys(contributorStats).map((key, index) => {
-      return getImageBase64FromURL(contributorStats[key].owner.avatarUrl);
-    }),
-  );
+  const imageUrls = Object.keys(contributorStats).map((key, index) => {
+    return contributorStats[key].owner.avatarUrl;
+  });
 
   const transformedContributorStats = contributorStats
     .map((contributorStat, index) => {
       const { owner, url, isInOrganization, name, stargazerCount } = contributorStat;
       return {
         name: name,
-        imageBase64: imageBase64s[index],
+        imageUrl: imageUrls[index],
         url: url,
         stars: stargazerCount,
         rank: calculateRank(stargazerCount),
