@@ -26473,7 +26473,7 @@ const renderContributorStatsCard = async (name, contributorStats = [], options =
     });
     const imageBase64s = await Promise.all(Object.keys(contributorStats).map((key, index) => {
         const url = new URL(contributorStats[key].owner.avatarUrl);
-        url.searchParams.append("s", "25");
+        url.searchParams.append("s", "50");
         return (0,_common_utils__WEBPACK_IMPORTED_MODULE_3__.getImageBase64FromURL)(url.toString());
     }));
     const transformedContributorStats = contributorStats

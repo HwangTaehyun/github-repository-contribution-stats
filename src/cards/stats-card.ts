@@ -91,7 +91,7 @@ export const renderContributorStatsCard = async (
   const imageBase64s = await Promise.all(
     Object.keys(contributorStats).map((key, index) => {
       const url = new URL(contributorStats[key].owner.avatarUrl);
-      url.searchParams.append("s", "25")
+      url.searchParams.append("s", "50")
       return getImageBase64FromURL(url.toString());
     }),
   );
