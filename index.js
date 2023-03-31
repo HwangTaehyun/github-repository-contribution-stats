@@ -26456,7 +26456,7 @@ const createTextNode = ({ imageBase64, name, rank, index, height }) => {
   `;
 };
 const renderContributorStatsCard = async (name, contributorStats = [], options = {}) => {
-    const { hide = [], line_height = 25, hide_title = false, hide_border = false, title_color, icon_color, text_color, bg_color, border_radius, border_color, custom_title, theme = 'default', locale, } = options;
+    const { hide = [], line_height = 25, hide_title = false, hide_border = false, title_color, icon_color, text_color, bg_color, border_radius, border_color, custom_title, theme = 'default', locale, limit = -1, } = options;
     const lheight = parseInt(String(line_height), 10);
     const { titleColor, textColor, iconColor, bgColor, borderColor } = (0,_common_utils__WEBPACK_IMPORTED_MODULE_3__.getCardColors)({
         title_color,
@@ -26473,7 +26473,7 @@ const renderContributorStatsCard = async (name, contributorStats = [], options =
     });
     const imageBase64s = await Promise.all(Object.keys(contributorStats).map((key, index) => {
         const url = new URL(contributorStats[key].owner.avatarUrl);
-        url.searchParams.append("s", "50");
+        url.searchParams.append('s', '50');
         return (0,_common_utils__WEBPACK_IMPORTED_MODULE_3__.getImageBase64FromURL)(url.toString());
     }));
     const transformedContributorStats = contributorStats
@@ -26489,11 +26489,12 @@ const renderContributorStatsCard = async (name, contributorStats = [], options =
     })
         .filter((repository) => !hide.includes(repository.rank))
         .sort((a, b) => b.stars - a.stars);
-    const statItems = Object.keys(transformedContributorStats).map((key, index) => createTextNode({
+    let statItems = Object.keys(transformedContributorStats).map((key, index) => createTextNode({
         ...transformedContributorStats[key],
         index,
         lheight,
     }));
+    statItems = limit > 0 ? statItems.slice(0, limit) : statItems.slice();
     const distanceY = 8;
     let height = Math.max(45 + (statItems.length + 1) * (lheight + distanceY), 150);
     const cssStyles = (0,_getStyles__WEBPACK_IMPORTED_MODULE_4__.getStyles)({
@@ -36273,7 +36274,7 @@ __webpack_require__.r(__webpack_exports__);
 const app = express__WEBPACK_IMPORTED_MODULE_5___default()();
 app.use(compression__WEBPACK_IMPORTED_MODULE_6___default()());
 app.get('/api', async (req, res) => {
-    const { username, hide, hide_title, hide_border, line_height, title_color, icon_color, text_color, bg_color, custom_title, border_radius, border_color, theme, cache_seconds, locale, combine_all_yearly_contributions, } = req.query;
+    const { username, hide, hide_title, hide_border, line_height, title_color, icon_color, text_color, bg_color, custom_title, border_radius, border_color, theme, cache_seconds, locale, combine_all_yearly_contributions, limit, } = req.query;
     res.set('Content-Type', 'image/svg+xml');
     if (locale && !(0,_translations__WEBPACK_IMPORTED_MODULE_4__.isLocaleAvailable)(locale)) {
         return res.send((0,_common_utils__WEBPACK_IMPORTED_MODULE_1__.renderError)('Something went wrong', 'Language not found'));
@@ -36300,6 +36301,7 @@ app.get('/api', async (req, res) => {
             border_color,
             theme,
             locale: locale ? locale.toLowerCase() : null,
+            limit,
         }));
     }
     catch (err) {

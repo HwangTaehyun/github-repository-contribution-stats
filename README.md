@@ -29,6 +29,14 @@ Change the `?username=` value to your GitHub username.
 
 \_Note: Available ranks are S+ (over 10000), S (over 1000), A+ (over 500), A (over 100), B+ (over 50) and B (over 1).
 
+### Limiting contribution repos to show
+
+To limit contribution repos to show, you can pass a query parameter `&limit=` with number value. For example, if you want to show only 5 contribution repos, then add **limit=5** like the following one.
+
+```md
+![Taehyun's GitHub Repository Contribution stats](https://github-contributor-stats.vercel.app/api?username=HwangTaehyun&limit=5)
+```
+
 ### Hiding rank stats
 
 To hide specific ranks, you can pass a query parameter `&hide=` with comma-separated rank values. If you need to add plus rank (ex. B+) to hide arrays , it is always safe to replace pluses with %2B
@@ -38,6 +46,7 @@ To hide specific ranks, you can pass a query parameter `&hide=` with comma-separ
 ```
 
 ### Including all contributions, not only recent contributions
+
 By default, the card is generated from GitHub's GraphQL API `repositoriesContributedTo`, which only includes recent contributions. To include all contributions, add `&combine_all_yearly_contributions=true` query parameter, which will let the card be generated from GitHub's GraphQL API `contributionsCollection`, including all contributions.
 
 ```md
@@ -69,8 +78,8 @@ this takes time. You can use this service for free.
 
 However, if you are using this project and are happy with it or just want to encourage me to continue creating stuff, there are a few ways you can do it:
 
--   Starring and sharing the project :rocket:
--   You can make one-time donations via buymeacoffee. I'll probably buy a coffee! :coffee:
+- Starring and sharing the project :rocket:
+- You can make one-time donations via buymeacoffee. I'll probably buy a coffee! :coffee:
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/eeht17173)
 
@@ -81,4 +90,3 @@ Thanks! :heart:
 Contributions are welcome!
 
 Made with :fire: and TypeScript.
-

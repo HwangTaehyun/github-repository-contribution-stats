@@ -35,6 +35,7 @@ app.get('/api', async (req, res) => {
     cache_seconds,
     locale,
     combine_all_yearly_contributions,
+    limit,
   } = req.query;
   res.set('Content-Type', 'image/svg+xml');
 
@@ -72,6 +73,7 @@ app.get('/api', async (req, res) => {
         border_color,
         theme,
         locale: locale ? (locale as string).toLowerCase() : null,
+        limit,
       }),
     );
   } catch (err: any) {

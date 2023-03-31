@@ -68,6 +68,7 @@ export const renderContributorStatsCard = async (
     custom_title,
     theme = 'default',
     locale,
+    limit = -1,
   } = options;
 
   const lheight = parseInt(String(line_height), 10);
@@ -91,7 +92,7 @@ export const renderContributorStatsCard = async (
   const imageBase64s = await Promise.all(
     Object.keys(contributorStats).map((key, index) => {
       const url = new URL(contributorStats[key].owner.avatarUrl);
-      url.searchParams.append("s", "50")
+      url.searchParams.append('s', '50');
       return getImageBase64FromURL(url.toString());
     }),
   );
@@ -110,7 +111,7 @@ export const renderContributorStatsCard = async (
     .filter((repository) => !hide.includes(repository.rank))
     .sort((a, b) => b.stars - a.stars);
 
-  const statItems = Object.keys(transformedContributorStats).map((key, index) =>
+  let statItems = Object.keys(transformedContributorStats).map((key, index) =>
     // create the text nodes, and pass index so that we can calculate the line spacing
     createTextNode({
       ...transformedContributorStats[key],
@@ -118,6 +119,8 @@ export const renderContributorStatsCard = async (
       lheight,
     }),
   );
+
+  statItems = limit > 0 ? statItems.slice(0, limit) : statItems.slice();
 
   // Calculate the card height depending on how many items there are
   // but if rank circle is visible clamp the minimum height to `150`
