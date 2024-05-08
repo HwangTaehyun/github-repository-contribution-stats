@@ -1,3 +1,4 @@
+import { calculateContributionRank } from '@/calculateContributionRank';
 import { calculateRank } from '@/calculateRank';
 import { Card } from '@/common/Card';
 import { I18n } from '@/common/I18n';
@@ -10,22 +11,42 @@ import {
 } from '@/common/utils';
 import { getStyles } from '@/getStyles';
 import { statCardLocales } from '@/translations';
+import { getContributors } from 'getContributors';
 
-const createTextNode = ({ imageBase64, name, rank, index, height }) => {
+const token = process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
+
+const createTextNode = ({
+  imageBase64,
+  name,
+  rank,
+  contributionRank,
+  index,
+  height,
+  hideContributorRank,
+}) => {
   const staggerDelay = (index + 3) * 150;
 
   const calculateTextWidth = (text) => {
     return measureText(text, 18);
   };
-  let offset = clampValue(calculateTextWidth(name), 180, 400);
-  offset += offset === 180 ? 5 : 15;
+  let offset = clampValue(calculateTextWidth(name), 230, 400);
+  offset += offset === 230 ? 5 : 15;
+  let cOffset = offset + 50;
 
   const rankText = rank.includes('+')
     ? `<text x="4" y="18.5">
         ${rank}
        </text>`
-    : `<text x="7.5" y="18.5">
+    : `<text x="7.2" y="18.5">
         ${rank}
+       </text>`;
+
+  const contributionRankText = contributionRank.includes('+')
+    ? `<text x="4" y="18.5">
+        ${contributionRank}
+       </text>`
+    : `<text x="7.2" y="18.5">
+        ${contributionRank}
        </text>`;
 
   return `
@@ -45,11 +66,22 @@ const createTextNode = ({ imageBase64, name, rank, index, height }) => {
           ${rankText}
         </g>
       </g>
+      ${
+        hideContributorRank
+          ? ''
+          : `
+        <g data-testid="rank-circle" transform="translate(${cOffset}, 0)">
+          <circle class="rank-circle-rim" cx="12.5" cy="12.5" r="14" />
+          <g class="rank-text">${contributionRankText}</g>
+        </g>
+        `
+      }
     </g>
   `;
 };
 
 export const renderContributorStatsCard = async (
+  username,
   name,
   contributorStats = [] as any,
   options = {} as any,
@@ -59,6 +91,7 @@ export const renderContributorStatsCard = async (
     line_height = 25,
     hide_title = false,
     hide_border = false,
+    hide_contributor_rank = false,
     title_color,
     icon_color,
     text_color,
@@ -96,16 +129,27 @@ export const renderContributorStatsCard = async (
       return getImageBase64FromURL(url.toString());
     }),
   );
-
+  const allContributorsByRepo = await Promise.all(
+    Object.keys(contributorStats).map((key, index) => {
+      const nameWithOwner = contributorStats[key].nameWithOwner;
+      return getContributors(username, nameWithOwner, token!);
+    }),
+  );
   const transformedContributorStats = contributorStats
     .map((contributorStat, index) => {
-      const { owner, url, isInOrganization, name, stargazerCount } = contributorStat;
+      const { url, name, stargazerCount, numOfMyContributions } = contributorStat;
+
       return {
         name: name,
         imageBase64: imageBase64s[index],
         url: url,
         stars: stargazerCount,
         rank: calculateRank(stargazerCount),
+        contributionRank: calculateContributionRank(
+          name,
+          allContributorsByRepo[index],
+          numOfMyContributions,
+        ),
       };
     })
     .filter((repository) => !hide.includes(repository.rank))
@@ -117,6 +161,7 @@ export const renderContributorStatsCard = async (
       ...transformedContributorStats[key],
       index,
       lheight,
+      hideContributorRank: hide_contributor_rank,
     }),
   );
 
@@ -125,7 +170,7 @@ export const renderContributorStatsCard = async (
   // Calculate the card height depending on how many items there are
   // but if rank circle is visible clamp the minimum height to `150`
   const distanceY = 8;
-  let height = Math.max(45 + (statItems.length + 1) * (lheight + distanceY), 150);
+  let height = Math.max(30 + 45 + (statItems.length + 1) * (lheight + distanceY), 150);
 
   const cssStyles = getStyles({
     titleColor,
@@ -153,6 +198,7 @@ export const renderContributorStatsCard = async (
     },
   });
 
+  card.setHideContributorRank(hide_contributor_rank);
   card.setHideBorder(hide_border);
   card.setHideTitle(hide_title);
   card.setCSS(cssStyles);

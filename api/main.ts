@@ -23,6 +23,7 @@ app.get('/api', async (req, res) => {
     hide,
     hide_title,
     hide_border,
+    hide_contributor_rank,
     line_height,
     title_color,
     icon_color,
@@ -59,10 +60,11 @@ app.get('/api', async (req, res) => {
     res.setHeader('Cache-Control', `public, max-age=${cacheSeconds}`);
 
     res.send(
-      await renderContributorStatsCard(name, contributorStats, {
+      await renderContributorStatsCard(username, name, contributorStats, {
         hide: parseArray(hide),
         hide_title: parseBoolean(hide_title),
         hide_border: parseBoolean(hide_border),
+        hide_contributor_rank: parseBoolean(hide_contributor_rank),
         line_height,
         title_color,
         icon_color,

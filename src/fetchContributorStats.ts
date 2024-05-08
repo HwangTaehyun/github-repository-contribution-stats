@@ -47,6 +47,15 @@ const fetchContributorStats = async (username) => {
                         nameWithOwner
                         stargazerCount
                         openGraphImageUrl
+                        defaultBranchRef {
+                          target {
+                            ... on Commit {
+                              history {
+                                totalCount
+                              }
+                            }
+                          }
+                        }
                       }
                     }
                   }

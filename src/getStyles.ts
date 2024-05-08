@@ -78,6 +78,10 @@ export const getStyles = ({ titleColor, textColor, iconColor, show_icons, progre
       font: 800 18px 'Segoe UI', Ubuntu, Sans-Serif; fill: ${textColor}; 
       animation: scaleInAnimation 0.3s ease-in-out forwards;
     }
+    .contribution-rank-text {
+      font: 800 18px 'Segoe UI', Ubuntu, Sans-Serif; fill: rgb(0, 128, 255); 
+      animation: scaleInAnimation 0.3s ease-in-out forwards;
+    }
     
     .bold { font-weight: 700 }
     .icon {
