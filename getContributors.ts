@@ -12,21 +12,16 @@ export async function getContributors(
   nameWithOwner: string,
   token: string,
 ): Promise<Contributor[]> {
-  const contributors: Contributor[] = [];
-  let page = 1;
-  while (true) {
-    const url = `https://api.github.com/repos/${nameWithOwner}/contributors?page=${page}&per_page=100`;
-    const response = await fetch(url, {
-      headers: { Authorization: `token ${token}` },
-    });
+  const page = 1;
+  const url = `https://api.github.com/repos/${nameWithOwner}/contributors?page=${page}&per_page=100`;
+  const response = await fetch(url, {
+    headers: { Authorization: `token ${token}` },
+  });
+  console.log(response);
 
-    if (!response.ok) break;
+  if (!response.ok) return [];
 
-    const data: Contributor[] = await response.json();
-    if (data.length === 0) break;
+  const contributors: Contributor[] = (await response.json()) as Contributor[];
 
-    contributors.push(...data);
-    page++;
-  }
   return contributors;
 }
