@@ -43739,10 +43739,10 @@ const createTextNode = ({ imageBase64, name, rank, contributionRank, index, heig
         <text class="stat bold">${name}</text>
       </g>
       <g data-testid="rank-circle" transform="translate(${offset}, 0)">
-        <circle class="rank-circle-rim" cx="12.5" cy="12.5" r="14" />
-        <g class="rank-text">
-          ${rankText}
-        </g>
+        <circle class="rank-circle-rim" cx="14" cy="14" r="14" />
+        <text x="14" y="14" class="rank-text" alignment-baseline="middle" text-anchor="middle">
+          ${rank}
+        </text>
       </g>
       ${hideContributorRank
         ? ''
