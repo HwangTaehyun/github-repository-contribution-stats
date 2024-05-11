@@ -43715,14 +43715,7 @@ const createTextNode = ({ imageBase64, name, rank, contributionRank, index, heig
     };
     let offset = (0,_common_utils__WEBPACK_IMPORTED_MODULE_5__.clampValue)(calculateTextWidth(name), 230, 400);
     offset += offset === 230 ? 5 : 15;
-    let cOffset = offset + 50;
-    const rankText = rank.includes('+')
-        ? `<text x="4" y="18.5">
-        ${rank}
-       </text>`
-        : `<text x="7.2" y="18.5">
-        ${rank}
-       </text>`;
+    let offset2 = offset + 50;
     const contributionRankText = contributionRank?.includes('+')
         ? `<text x="4" y="18.5">
         ${contributionRank}
@@ -43730,6 +43723,34 @@ const createTextNode = ({ imageBase64, name, rank, contributionRank, index, heig
         : `<text x="7.2" y="18.5">
         ${contributionRank}
        </text>`;
+    const rankText = rank.includes('+')
+        ? `<text x="4" y="18.5">
+        ${rank}
+       </text>`
+        : `<text x="7.2" y="18.5">
+        ${rank}
+       </text>`;
+    let rankItems = lodash__WEBPACK_IMPORTED_MODULE_0___default().isEmpty(contributionRank)
+        ? `
+    <g data-testid="rank-circle" transform="translate(${offset}, 0)">
+      <circle class="rank-circle-rim" cx="12.5" cy="12.5" r="14" />
+      <g class="rank-text">
+        ${rankText}
+      </g>
+    </g>
+    `
+        : `
+    <g data-testid="rank-circle" transform="translate(${offset}, 0)">
+      <circle class="rank-circle-rim" cx="12.5" cy="12.5" r="14" />
+      <g class="rank-text">${contributionRankText}</g>
+    </g>
+    <g data-testid="rank-circle" transform="translate(${offset2}, 0)">
+      <circle class="rank-circle-rim" cx="12.5" cy="12.5" r="14" />
+      <g class="rank-text">
+        ${rankText}
+      </g>
+    </g>
+    `;
     return `
     <g class="stagger" style="animation-delay: ${staggerDelay}ms" transform="translate(25, 0)">
       <defs>
@@ -43741,20 +43762,7 @@ const createTextNode = ({ imageBase64, name, rank, contributionRank, index, heig
       <g transform="translate(30,16)">
         <text class="stat bold">${name}</text>
       </g>
-      <g data-testid="rank-circle" transform="translate(${offset}, 0)">
-        <circle class="rank-circle-rim" cx="12.5" cy="12.5" r="14" />
-        <g class="rank-text">
-          ${rankText}
-        </g>
-      </g>
-      ${lodash__WEBPACK_IMPORTED_MODULE_0___default().isEmpty(contributionRank)
-        ? ''
-        : `
-        <g data-testid="rank-circle" transform="translate(${cOffset}, 0)">
-          <circle class="rank-circle-rim" cx="12.5" cy="12.5" r="14" />
-          <g class="rank-text">${contributionRankText}</g>
-        </g>
-        `}
+      ${rankItems}
     </g>
   `;
 };
@@ -43780,8 +43788,6 @@ const renderContributorStatsCard = async (username, name, contributorStats = [],
         return (0,_common_utils__WEBPACK_IMPORTED_MODULE_5__.getImageBase64FromURL)(url.toString());
     }));
     let allContributorsByRepo;
-    console.log('!!!!!!');
-    console.log(hide_contributor_rank);
     if (!hide_contributor_rank) {
         allContributorsByRepo = await Promise.all(Object.keys(contributorStats).map((key, index) => {
             const nameWithOwner = contributorStats[key].nameWithOwner;
@@ -43806,8 +43812,8 @@ const renderContributorStatsCard = async (username, name, contributorStats = [],
                 imageBase64: imageBase64s[index],
                 url: url,
                 stars: stargazerCount,
-                rank: (0,_calculateRank__WEBPACK_IMPORTED_MODULE_2__.calculateRank)(stargazerCount),
                 contributionRank: (0,_calculateContributionRank__WEBPACK_IMPORTED_MODULE_1__.calculateContributionRank)(name, allContributorsByRepo[index], numOfMyContributions),
+                rank: (0,_calculateRank__WEBPACK_IMPORTED_MODULE_2__.calculateRank)(stargazerCount),
             };
         }
     })
@@ -43982,19 +43988,6 @@ class Card {
       data-testid="header"
     >${this.repositoryNameTitle}</text>
   `;
-        const starIcon = `
-    <svg
-      class="icon"
-      x="0"
-      y="-13"
-      viewBox="0 0 24 24 "
-      version="1.1"
-      width="24"
-      height="24"
-    >
-      <path d="M11.2691 4.41115C11.5006 3.89177 11.6164 3.63208 11.7776 3.55211C11.9176 3.48263 12.082 3.48263 12.222 3.55211C12.3832 3.63208 12.499 3.89177 12.7305 4.41115L14.5745 8.54808C14.643 8.70162 14.6772 8.77839 14.7302 8.83718C14.777 8.8892 14.8343 8.93081 14.8982 8.95929C14.9705 8.99149 15.0541 9.00031 15.2213 9.01795L19.7256 9.49336C20.2911 9.55304 20.5738 9.58288 20.6997 9.71147C20.809 9.82316 20.8598 9.97956 20.837 10.1342C20.8108 10.3122 20.5996 10.5025 20.1772 10.8832L16.8125 13.9154C16.6877 14.0279 16.6252 14.0842 16.5857 14.1527C16.5507 14.2134 16.5288 14.2807 16.5215 14.3503C16.5132 14.429 16.5306 14.5112 16.5655 14.6757L17.5053 19.1064C17.6233 19.6627 17.6823 19.9408 17.5989 20.1002C17.5264 20.2388 17.3934 20.3354 17.2393 20.3615C17.0619 20.3915 16.8156 20.2495 16.323 19.9654L12.3995 17.7024C12.2539 17.6184 12.1811 17.5765 12.1037 17.56C12.0352 17.5455 11.9644 17.5455 11.8959 17.56C11.8185 17.5765 11.7457 17.6184 11.6001 17.7024L7.67662 19.9654C7.18404 20.2495 6.93775 20.3915 6.76034 20.3615C6.60623 20.3354 6.47319 20.2388 6.40075 20.1002C6.31736 19.9408 6.37635 19.6627 6.49434 19.1064L7.4341 14.6757C7.46898 14.5112 7.48642 14.429 7.47814 14.3503C7.47081 14.2807 7.44894 14.2134 7.41394 14.1527C7.37439 14.0842 7.31195 14.0279 7.18708 13.9154L3.82246 10.8832C3.40005 10.5025 3.18884 10.3122 3.16258 10.1342C3.13978 9.97956 3.19059 9.82316 3.29993 9.71147C3.42581 9.58288 3.70856 9.55304 4.27406 9.49336L8.77835 9.01795C8.94553 9.00031 9.02911 8.99149 9.10139 8.95929C9.16534 8.93081 9.2226 8.8892 9.26946 8.83718C9.32241 8.77839 9.35663 8.70162 9.42508 8.54808L11.2691 4.41115Z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-  `;
         const gitPRIcon = `
     <svg
       class="icon"
@@ -44008,6 +44001,19 @@ class Card {
       <path fill-rule="evenodd" clip-rule="evenodd" d="M14.7071 2.70711L13.4142 4H14C17.3137 4 20 6.68629 20 10V16.1707C21.1652 16.5825 22 17.6938 22 19C22 20.6569 20.6569 22 19 22C17.3431 22 16 20.6569 16 19C16 17.6938 16.8348 16.5825 18 16.1707V10C18 7.79086 16.2091 6 14 6H13.4142L14.7071 7.29289C15.0976 7.68342 15.0976 8.31658 14.7071 8.70711C14.3166 9.09763 13.6834 9.09763 13.2929 8.70711L10.2929 5.70711C9.90237 5.31658 9.90237 4.68342 10.2929 4.29289L13.2929 1.29289C13.6834 0.902369 14.3166 0.902369 14.7071 1.29289C15.0976 1.68342 15.0976 2.31658 14.7071 2.70711ZM18 19C18 18.4477 18.4477 18 19 18C19.5523 18 20 18.4477 20 19C20 19.5523 19.5523 20 19 20C18.4477 20 18 19.5523 18 19ZM6 4C5.44772 4 5 4.44772 5 5C5 5.55228 5.44772 6 6 6C6.55228 6 7 5.55228 7 5C7 4.44772 6.55228 4 6 4ZM7 7.82929C8.16519 7.41746 9 6.30622 9 5C9 3.34315 7.65685 2 6 2C4.34315 2 3 3.34315 3 5C3 6.30622 3.83481 7.41746 5 7.82929V16.1707C3.83481 16.5825 3 17.6938 3 19C3 20.6569 4.34315 22 6 22C7.65685 22 9 20.6569 9 19C9 17.6938 8.16519 16.5825 7 16.1707V7.82929ZM6 18C5.44772 18 5 18.4477 5 19C5 19.5523 5.44772 20 6 20C6.55228 20 7 19.5523 7 19C7 18.4477 6.55228 18 6 18Z"/>
     </svg>
   `;
+        const starIcon = `
+    <svg
+      class="icon"
+      x="0"
+      y="-13"
+      viewBox="0 0 24 24 "
+      version="1.1"
+      width="24"
+      height="24"
+    >
+      <path d="M11.2691 4.41115C11.5006 3.89177 11.6164 3.63208 11.7776 3.55211C11.9176 3.48263 12.082 3.48263 12.222 3.55211C12.3832 3.63208 12.499 3.89177 12.7305 4.41115L14.5745 8.54808C14.643 8.70162 14.6772 8.77839 14.7302 8.83718C14.777 8.8892 14.8343 8.93081 14.8982 8.95929C14.9705 8.99149 15.0541 9.00031 15.2213 9.01795L19.7256 9.49336C20.2911 9.55304 20.5738 9.58288 20.6997 9.71147C20.809 9.82316 20.8598 9.97956 20.837 10.1342C20.8108 10.3122 20.5996 10.5025 20.1772 10.8832L16.8125 13.9154C16.6877 14.0279 16.6252 14.0842 16.5857 14.1527C16.5507 14.2134 16.5288 14.2807 16.5215 14.3503C16.5132 14.429 16.5306 14.5112 16.5655 14.6757L17.5053 19.1064C17.6233 19.6627 17.6823 19.9408 17.5989 20.1002C17.5264 20.2388 17.3934 20.3354 17.2393 20.3615C17.0619 20.3915 16.8156 20.2495 16.323 19.9654L12.3995 17.7024C12.2539 17.6184 12.1811 17.5765 12.1037 17.56C12.0352 17.5455 11.9644 17.5455 11.8959 17.56C11.8185 17.5765 11.7457 17.6184 11.6001 17.7024L7.67662 19.9654C7.18404 20.2495 6.93775 20.3915 6.76034 20.3615C6.60623 20.3354 6.47319 20.2388 6.40075 20.1002C6.31736 19.9408 6.37635 19.6627 6.49434 19.1064L7.4341 14.6757C7.46898 14.5112 7.48642 14.429 7.47814 14.3503C7.47081 14.2807 7.44894 14.2134 7.41394 14.1527C7.37439 14.0842 7.31195 14.0279 7.18708 13.9154L3.82246 10.8832C3.40005 10.5025 3.18884 10.3122 3.16258 10.1342C3.13978 9.97956 3.19059 9.82316 3.29993 9.71147C3.42581 9.58288 3.70856 9.55304 4.27406 9.49336L8.77835 9.01795C8.94553 9.00031 9.02911 8.99149 9.10139 8.95929C9.16534 8.93081 9.2226 8.8892 9.26946 8.83718C9.32241 8.77839 9.35663 8.70162 9.42508 8.54808L11.2691 4.41115Z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    `;
         const githubIcon = `
     <svg
       class="icon"
@@ -44041,7 +44047,7 @@ class Card {
         transform="translate(${this.paddingX + 235}, ${this.paddingY + 30})"
       >
         ${(0,_common_utils__WEBPACK_IMPORTED_MODULE_0__.flexLayout)({
-            items: [starIcon, !this.hideContributorRank && gitPRIcon],
+            items: [!this.hideContributorRank && gitPRIcon, starIcon],
             gap: 50,
             direction: 'row',
         }).join('')}

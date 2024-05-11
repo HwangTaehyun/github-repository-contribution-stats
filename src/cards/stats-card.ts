@@ -22,9 +22,18 @@ const createTextNode = ({ imageBase64, name, rank, contributionRank, index, heig
   const calculateTextWidth = (text) => {
     return measureText(text, 18);
   };
+
   let offset = clampValue(calculateTextWidth(name), 230, 400);
   offset += offset === 230 ? 5 : 15;
-  let cOffset = offset + 50;
+  let offset2 = offset + 50;
+
+  const contributionRankText = contributionRank?.includes('+')
+    ? `<text x="4" y="18.5">
+        ${contributionRank}
+       </text>`
+    : `<text x="7.2" y="18.5">
+        ${contributionRank}
+       </text>`;
 
   const rankText = rank.includes('+')
     ? `<text x="4" y="18.5">
@@ -34,13 +43,27 @@ const createTextNode = ({ imageBase64, name, rank, contributionRank, index, heig
         ${rank}
        </text>`;
 
-  const contributionRankText = contributionRank?.includes('+')
-    ? `<text x="4" y="18.5">
-        ${contributionRank}
-       </text>`
-    : `<text x="7.2" y="18.5">
-        ${contributionRank}
-       </text>`;
+  let rankItems = _.isEmpty(contributionRank)
+    ? `
+    <g data-testid="rank-circle" transform="translate(${offset}, 0)">
+      <circle class="rank-circle-rim" cx="12.5" cy="12.5" r="14" />
+      <g class="rank-text">
+        ${rankText}
+      </g>
+    </g>
+    `
+    : `
+    <g data-testid="rank-circle" transform="translate(${offset}, 0)">
+      <circle class="rank-circle-rim" cx="12.5" cy="12.5" r="14" />
+      <g class="rank-text">${contributionRankText}</g>
+    </g>
+    <g data-testid="rank-circle" transform="translate(${offset2}, 0)">
+      <circle class="rank-circle-rim" cx="12.5" cy="12.5" r="14" />
+      <g class="rank-text">
+        ${rankText}
+      </g>
+    </g>
+    `;
 
   return `
     <g class="stagger" style="animation-delay: ${staggerDelay}ms" transform="translate(25, 0)">
@@ -53,22 +76,7 @@ const createTextNode = ({ imageBase64, name, rank, contributionRank, index, heig
       <g transform="translate(30,16)">
         <text class="stat bold">${name}</text>
       </g>
-      <g data-testid="rank-circle" transform="translate(${offset}, 0)">
-        <circle class="rank-circle-rim" cx="12.5" cy="12.5" r="14" />
-        <g class="rank-text">
-          ${rankText}
-        </g>
-      </g>
-      ${
-        _.isEmpty(contributionRank)
-          ? ''
-          : `
-        <g data-testid="rank-circle" transform="translate(${cOffset}, 0)">
-          <circle class="rank-circle-rim" cx="12.5" cy="12.5" r="14" />
-          <g class="rank-text">${contributionRankText}</g>
-        </g>
-        `
-      }
+      ${rankItems}
     </g>
   `;
 };
@@ -123,8 +131,6 @@ export const renderContributorStatsCard = async (
     }),
   );
   let allContributorsByRepo: Contributor[][];
-  console.log('!!!!!!');
-  console.log(hide_contributor_rank);
   if (!hide_contributor_rank) {
     allContributorsByRepo = await Promise.all(
       Object.keys(contributorStats).map((key, index) => {
@@ -151,12 +157,12 @@ export const renderContributorStatsCard = async (
           imageBase64: imageBase64s[index],
           url: url,
           stars: stargazerCount,
-          rank: calculateRank(stargazerCount),
           contributionRank: calculateContributionRank(
             name,
             allContributorsByRepo[index],
             numOfMyContributions,
           ),
+          rank: calculateRank(stargazerCount),
         };
       }
     })
