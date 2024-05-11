@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import fetch from 'node-fetch';
 
-interface Contributor {
+export interface Contributor {
   login: string;
   contributions: number;
   avatar_url: string;

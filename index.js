@@ -43688,14 +43688,17 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "renderContributorStatsCard": () => (/* binding */ renderContributorStatsCard)
 /* harmony export */ });
-/* harmony import */ var _calculateContributionRank__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @/calculateContributionRank */ "./src/calculateContributionRank.ts");
-/* harmony import */ var _calculateRank__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @/calculateRank */ "./src/calculateRank.ts");
-/* harmony import */ var _common_Card__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @/common/Card */ "./src/common/Card.ts");
-/* harmony import */ var _common_I18n__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @/common/I18n */ "./src/common/I18n.ts");
-/* harmony import */ var _common_utils__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @/common/utils */ "./src/common/utils.ts");
-/* harmony import */ var _getStyles__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @/getStyles */ "./src/getStyles.ts");
-/* harmony import */ var _translations__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @/translations */ "./src/translations.ts");
-/* harmony import */ var getContributors__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! getContributors */ "./getContributors.ts");
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _calculateContributionRank__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @/calculateContributionRank */ "./src/calculateContributionRank.ts");
+/* harmony import */ var _calculateRank__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @/calculateRank */ "./src/calculateRank.ts");
+/* harmony import */ var _common_Card__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @/common/Card */ "./src/common/Card.ts");
+/* harmony import */ var _common_I18n__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @/common/I18n */ "./src/common/I18n.ts");
+/* harmony import */ var _common_utils__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @/common/utils */ "./src/common/utils.ts");
+/* harmony import */ var _getStyles__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @/getStyles */ "./src/getStyles.ts");
+/* harmony import */ var _translations__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @/translations */ "./src/translations.ts");
+/* harmony import */ var getContributors__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! getContributors */ "./getContributors.ts");
+
 
 
 
@@ -43705,12 +43708,12 @@ __webpack_require__.r(__webpack_exports__);
 
 
 const token = process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
-const createTextNode = ({ imageBase64, name, rank, contributionRank, index, height, hideContributorRank, }) => {
+const createTextNode = ({ imageBase64, name, rank, contributionRank, index, height }) => {
     const staggerDelay = (index + 3) * 150;
     const calculateTextWidth = (text) => {
-        return (0,_common_utils__WEBPACK_IMPORTED_MODULE_4__.measureText)(text, 18);
+        return (0,_common_utils__WEBPACK_IMPORTED_MODULE_5__.measureText)(text, 18);
     };
-    let offset = (0,_common_utils__WEBPACK_IMPORTED_MODULE_4__.clampValue)(calculateTextWidth(name), 230, 400);
+    let offset = (0,_common_utils__WEBPACK_IMPORTED_MODULE_5__.clampValue)(calculateTextWidth(name), 230, 400);
     offset += offset === 230 ? 5 : 15;
     let cOffset = offset + 50;
     const rankText = rank.includes('+')
@@ -43720,7 +43723,7 @@ const createTextNode = ({ imageBase64, name, rank, contributionRank, index, heig
         : `<text x="7.2" y="18.5">
         ${rank}
        </text>`;
-    const contributionRankText = contributionRank.includes('+')
+    const contributionRankText = contributionRank?.includes('+')
         ? `<text x="4" y="18.5">
         ${contributionRank}
        </text>`
@@ -43744,7 +43747,7 @@ const createTextNode = ({ imageBase64, name, rank, contributionRank, index, heig
           ${rankText}
         </g>
       </g>
-      ${hideContributorRank
+      ${lodash__WEBPACK_IMPORTED_MODULE_0___default().isEmpty(contributionRank)
         ? ''
         : `
         <g data-testid="rank-circle" transform="translate(${cOffset}, 0)">
@@ -43756,9 +43759,9 @@ const createTextNode = ({ imageBase64, name, rank, contributionRank, index, heig
   `;
 };
 const renderContributorStatsCard = async (username, name, contributorStats = [], options = {}) => {
-    const { hide = [], line_height = 25, hide_title = false, hide_border = false, hide_contributor_rank = false, title_color, icon_color, text_color, bg_color, border_radius, border_color, custom_title, theme = 'default', locale, limit = -1, } = options;
+    const { hide = [], line_height = 25, hide_title = false, hide_border = false, hide_contributor_rank = true, title_color, icon_color, text_color, bg_color, border_radius, border_color, custom_title, theme = 'default', locale, limit = -1, } = options;
     const lheight = parseInt(String(line_height), 10);
-    const { titleColor, textColor, iconColor, bgColor, borderColor } = (0,_common_utils__WEBPACK_IMPORTED_MODULE_4__.getCardColors)({
+    const { titleColor, textColor, iconColor, bgColor, borderColor } = (0,_common_utils__WEBPACK_IMPORTED_MODULE_5__.getCardColors)({
         title_color,
         icon_color,
         text_color,
@@ -43767,30 +43770,46 @@ const renderContributorStatsCard = async (username, name, contributorStats = [],
         theme,
     });
     const apostrophe = ['x', 's'].includes(name.slice(-1).toLocaleLowerCase()) ? '' : 's';
-    const i18n = new _common_I18n__WEBPACK_IMPORTED_MODULE_3__.I18n({
+    const i18n = new _common_I18n__WEBPACK_IMPORTED_MODULE_4__.I18n({
         locale,
-        translations: (0,_translations__WEBPACK_IMPORTED_MODULE_6__.statCardLocales)({ name, apostrophe }),
+        translations: (0,_translations__WEBPACK_IMPORTED_MODULE_7__.statCardLocales)({ name, apostrophe }),
     });
     const imageBase64s = await Promise.all(Object.keys(contributorStats).map((key, index) => {
         const url = new URL(contributorStats[key].owner.avatarUrl);
         url.searchParams.append('s', '50');
-        return (0,_common_utils__WEBPACK_IMPORTED_MODULE_4__.getImageBase64FromURL)(url.toString());
+        return (0,_common_utils__WEBPACK_IMPORTED_MODULE_5__.getImageBase64FromURL)(url.toString());
     }));
-    const allContributorsByRepo = await Promise.all(Object.keys(contributorStats).map((key, index) => {
-        const nameWithOwner = contributorStats[key].nameWithOwner;
-        return (0,getContributors__WEBPACK_IMPORTED_MODULE_7__.getContributors)(username, nameWithOwner, token);
-    }));
+    let allContributorsByRepo;
+    console.log('!!!!!!');
+    console.log(hide_contributor_rank);
+    if (!hide_contributor_rank) {
+        allContributorsByRepo = await Promise.all(Object.keys(contributorStats).map((key, index) => {
+            const nameWithOwner = contributorStats[key].nameWithOwner;
+            return (0,getContributors__WEBPACK_IMPORTED_MODULE_8__.getContributors)(username, nameWithOwner, token);
+        }));
+    }
     const transformedContributorStats = contributorStats
         .map((contributorStat, index) => {
         const { url, name, stargazerCount, numOfMyContributions } = contributorStat;
-        return {
-            name: name,
-            imageBase64: imageBase64s[index],
-            url: url,
-            stars: stargazerCount,
-            rank: (0,_calculateRank__WEBPACK_IMPORTED_MODULE_1__.calculateRank)(stargazerCount),
-            contributionRank: (0,_calculateContributionRank__WEBPACK_IMPORTED_MODULE_0__.calculateContributionRank)(name, allContributorsByRepo[index], numOfMyContributions),
-        };
+        if (hide_contributor_rank) {
+            return {
+                name: name,
+                imageBase64: imageBase64s[index],
+                url: url,
+                stars: stargazerCount,
+                rank: (0,_calculateRank__WEBPACK_IMPORTED_MODULE_2__.calculateRank)(stargazerCount),
+            };
+        }
+        else {
+            return {
+                name: name,
+                imageBase64: imageBase64s[index],
+                url: url,
+                stars: stargazerCount,
+                rank: (0,_calculateRank__WEBPACK_IMPORTED_MODULE_2__.calculateRank)(stargazerCount),
+                contributionRank: (0,_calculateContributionRank__WEBPACK_IMPORTED_MODULE_1__.calculateContributionRank)(name, allContributorsByRepo[index], numOfMyContributions),
+            };
+        }
     })
         .filter((repository) => !hide.includes(repository.rank))
         .sort((a, b) => b.stars - a.stars);
@@ -43798,12 +43817,11 @@ const renderContributorStatsCard = async (username, name, contributorStats = [],
         ...transformedContributorStats[key],
         index,
         lheight,
-        hideContributorRank: hide_contributor_rank,
     }));
     statItems = limit > 0 ? statItems.slice(0, limit) : statItems.slice();
     const distanceY = 8;
     let height = Math.max(30 + 45 + (statItems.length + 1) * (lheight + distanceY), 150);
-    const cssStyles = (0,_getStyles__WEBPACK_IMPORTED_MODULE_5__.getStyles)({
+    const cssStyles = (0,_getStyles__WEBPACK_IMPORTED_MODULE_6__.getStyles)({
         titleColor,
         textColor,
         iconColor,
@@ -43811,7 +43829,7 @@ const renderContributorStatsCard = async (username, name, contributorStats = [],
         progress: true,
     });
     const width = 495;
-    const card = new _common_Card__WEBPACK_IMPORTED_MODULE_2__.Card({
+    const card = new _common_Card__WEBPACK_IMPORTED_MODULE_3__.Card({
         customTitle: custom_title,
         defaultTitle: i18n.t('statcard.title'),
         titlePrefixIcon: '',
@@ -43832,7 +43850,7 @@ const renderContributorStatsCard = async (username, name, contributorStats = [],
     card.setCSS(cssStyles);
     return card.render(`
     <svg overflow="visible">
-      ${(0,_common_utils__WEBPACK_IMPORTED_MODULE_4__.flexLayout)({
+      ${(0,_common_utils__WEBPACK_IMPORTED_MODULE_5__.flexLayout)({
         items: statItems,
         gap: lheight + distanceY,
         direction: 'column',

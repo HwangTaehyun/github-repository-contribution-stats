@@ -45,12 +45,12 @@ To hide specific ranks, you can pass a query parameter `&hide=` with comma-separ
 ![Taehyun's GitHub Repository Contribution stats](https://github-contributor-stats.vercel.app/api?username=HwangTaehyun&hide=B,B%2B)
 ```
 
-### Hiding contributor rank stats
+### Showing contributor rank stats
 
-To hide contributor ranks, you can pass a query parameter `&hide_contributor_rank=true`.
+To show contributor ranks, you can pass a query parameter `&hide_contributor_rank=false`.
 
 ```md
-![Taehyun's GitHub Repository Contribution stats](https://github-contributor-stats.vercel.app/api?username=HwangTaehyun&hide=B,B%2B&hide_contributor_rank=true&limit=5)
+![Taehyun's GitHub Repository Contribution stats](https://github-contributor-stats.vercel.app/api?username=HwangTaehyun&hide=B,B%2B&hide_contributor_rank=false&limit=5)
 ```
 
 ### Including all contributions, not only recent contributions

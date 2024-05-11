@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { calculateContributionRank } from '@/calculateContributionRank';
 import { calculateRank } from '@/calculateRank';
 import { Card } from '@/common/Card';
@@ -11,19 +12,11 @@ import {
 } from '@/common/utils';
 import { getStyles } from '@/getStyles';
 import { statCardLocales } from '@/translations';
-import { getContributors } from 'getContributors';
+import { Contributor, getContributors } from 'getContributors';
 
 const token = process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
 
-const createTextNode = ({
-  imageBase64,
-  name,
-  rank,
-  contributionRank,
-  index,
-  height,
-  hideContributorRank,
-}) => {
+const createTextNode = ({ imageBase64, name, rank, contributionRank, index, height }) => {
   const staggerDelay = (index + 3) * 150;
 
   const calculateTextWidth = (text) => {
@@ -41,7 +34,7 @@ const createTextNode = ({
         ${rank}
        </text>`;
 
-  const contributionRankText = contributionRank.includes('+')
+  const contributionRankText = contributionRank?.includes('+')
     ? `<text x="4" y="18.5">
         ${contributionRank}
        </text>`
@@ -67,7 +60,7 @@ const createTextNode = ({
         </g>
       </g>
       ${
-        hideContributorRank
+        _.isEmpty(contributionRank)
           ? ''
           : `
         <g data-testid="rank-circle" transform="translate(${cOffset}, 0)">
@@ -91,7 +84,7 @@ export const renderContributorStatsCard = async (
     line_height = 25,
     hide_title = false,
     hide_border = false,
-    hide_contributor_rank = false,
+    hide_contributor_rank = true,
     title_color,
     icon_color,
     text_color,
@@ -129,28 +122,43 @@ export const renderContributorStatsCard = async (
       return getImageBase64FromURL(url.toString());
     }),
   );
-  const allContributorsByRepo = await Promise.all(
-    Object.keys(contributorStats).map((key, index) => {
-      const nameWithOwner = contributorStats[key].nameWithOwner;
-      return getContributors(username, nameWithOwner, token!);
-    }),
-  );
+  let allContributorsByRepo: Contributor[][];
+  console.log('!!!!!!');
+  console.log(hide_contributor_rank);
+  if (!hide_contributor_rank) {
+    allContributorsByRepo = await Promise.all(
+      Object.keys(contributorStats).map((key, index) => {
+        const nameWithOwner = contributorStats[key].nameWithOwner;
+        return getContributors(username, nameWithOwner, token!);
+      }),
+    );
+  }
   const transformedContributorStats = contributorStats
     .map((contributorStat, index) => {
       const { url, name, stargazerCount, numOfMyContributions } = contributorStat;
 
-      return {
-        name: name,
-        imageBase64: imageBase64s[index],
-        url: url,
-        stars: stargazerCount,
-        rank: calculateRank(stargazerCount),
-        contributionRank: calculateContributionRank(
-          name,
-          allContributorsByRepo[index],
-          numOfMyContributions,
-        ),
-      };
+      if (hide_contributor_rank) {
+        return {
+          name: name,
+          imageBase64: imageBase64s[index],
+          url: url,
+          stars: stargazerCount,
+          rank: calculateRank(stargazerCount),
+        };
+      } else {
+        return {
+          name: name,
+          imageBase64: imageBase64s[index],
+          url: url,
+          stars: stargazerCount,
+          rank: calculateRank(stargazerCount),
+          contributionRank: calculateContributionRank(
+            name,
+            allContributorsByRepo[index],
+            numOfMyContributions,
+          ),
+        };
+      }
     })
     .filter((repository) => !hide.includes(repository.rank))
     .sort((a, b) => b.stars - a.stars);
@@ -161,7 +169,6 @@ export const renderContributorStatsCard = async (
       ...transformedContributorStats[key],
       index,
       lheight,
-      hideContributorRank: hide_contributor_rank,
     }),
   );
 
