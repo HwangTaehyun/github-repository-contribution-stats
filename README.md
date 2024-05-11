@@ -53,6 +53,14 @@ To show contributor ranks, you can pass a query parameter `&hide_contributor_ran
 ![Taehyun's GitHub Repository Contribution stats](https://github-contributor-stats.vercel.app/api?username=HwangTaehyun&hide=B,B%2B&hide_contributor_rank=false&limit=5)
 ```
 
+### Configuring the sorting order for gitHub contributor stats
+
+To specify the sorting order based on either contributions or star count, include the &order_by= query parameter with the options `stars` or `contributions` in your request URL.
+
+```md
+![Taehyun's GitHub Repository Contribution stats](https://github-contributor-stats.vercel.app/api?username=HwangTaehyun&hide=B,B%2B&hide_contributor_rank=false&limit=5&order_by=contributions)
+```
+
 ### Including all contributions, not only recent contributions
 
 By default, the card is generated from GitHub's GraphQL API `repositoriesContributedTo`, which only includes recent contributions. To include all contributions, add `&combine_all_yearly_contributions=true` query parameter, which will let the card be generated from GitHub's GraphQL API `contributionsCollection`, including all contributions.

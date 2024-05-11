@@ -43767,7 +43767,8 @@ const createTextNode = ({ imageBase64, name, rank, contributionRank, index, heig
   `;
 };
 const renderContributorStatsCard = async (username, name, contributorStats = [], options = {}) => {
-    const { hide = [], line_height = 25, hide_title = false, hide_border = false, hide_contributor_rank = true, title_color, icon_color, text_color, bg_color, border_radius, border_color, custom_title, theme = 'default', locale, limit = -1, } = options;
+    const { hide = [], line_height = 25, hide_title = false, hide_border = false, hide_contributor_rank = true, order_by = 'stars', title_color, icon_color, text_color, bg_color, border_radius, border_color, custom_title, theme = 'default', locale, limit = -1, } = options;
+    const orderBy = order_by;
     const lheight = parseInt(String(line_height), 10);
     const { titleColor, textColor, iconColor, bgColor, borderColor } = (0,_common_utils__WEBPACK_IMPORTED_MODULE_5__.getCardColors)({
         title_color,
@@ -43794,6 +43795,17 @@ const renderContributorStatsCard = async (username, name, contributorStats = [],
             return (0,getContributors__WEBPACK_IMPORTED_MODULE_8__.getContributors)(username, nameWithOwner, token);
         }));
     }
+    const rankValues = {
+        'S+': 5,
+        S: 4,
+        'A+': 3,
+        A: 2,
+        'B+': 1,
+        B: 0,
+    };
+    const sortFunction = orderBy == 'stars'
+        ? (a, b) => b.stars - a.stars
+        : (a, b) => rankValues[b.contributionRank] - rankValues[a.contributionRank];
     const transformedContributorStats = contributorStats
         .map((contributorStat, index) => {
         const { url, name, stargazerCount, numOfMyContributions } = contributorStat;
@@ -43818,7 +43830,7 @@ const renderContributorStatsCard = async (username, name, contributorStats = [],
         }
     })
         .filter((repository) => !hide.includes(repository.rank))
-        .sort((a, b) => b.stars - a.stars);
+        .sort(sortFunction);
     let statItems = Object.keys(transformedContributorStats).map((key, index) => createTextNode({
         ...transformedContributorStats[key],
         index,
@@ -53833,7 +53845,7 @@ __webpack_require__.r(__webpack_exports__);
 const app = express__WEBPACK_IMPORTED_MODULE_5___default()();
 app.use(compression__WEBPACK_IMPORTED_MODULE_6___default()());
 app.get('/api', async (req, res) => {
-    const { username, hide, hide_title, hide_border, hide_contributor_rank, line_height, title_color, icon_color, text_color, bg_color, custom_title, border_radius, border_color, theme, cache_seconds, locale, combine_all_yearly_contributions, limit, } = req.query;
+    const { username, hide, hide_title, hide_border, hide_contributor_rank, order_by, line_height, title_color, icon_color, text_color, bg_color, custom_title, border_radius, border_color, theme, cache_seconds, locale, combine_all_yearly_contributions, limit, } = req.query;
     res.set('Content-Type', 'image/svg+xml');
     if (locale && !(0,_translations__WEBPACK_IMPORTED_MODULE_4__.isLocaleAvailable)(locale)) {
         return res.send((0,_common_utils__WEBPACK_IMPORTED_MODULE_1__.renderError)('Something went wrong', 'Language not found'));
@@ -53851,6 +53863,7 @@ app.get('/api', async (req, res) => {
             hide_title: (0,_common_utils__WEBPACK_IMPORTED_MODULE_1__.parseBoolean)(hide_title),
             hide_border: (0,_common_utils__WEBPACK_IMPORTED_MODULE_1__.parseBoolean)(hide_border),
             hide_contributor_rank: (0,_common_utils__WEBPACK_IMPORTED_MODULE_1__.parseBoolean)(hide_contributor_rank),
+            order_by,
             line_height,
             title_color,
             icon_color,

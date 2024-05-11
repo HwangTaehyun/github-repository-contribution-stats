@@ -93,6 +93,7 @@ export const renderContributorStatsCard = async (
     hide_title = false,
     hide_border = false,
     hide_contributor_rank = true,
+    order_by = 'stars',
     title_color,
     icon_color,
     text_color,
@@ -105,6 +106,7 @@ export const renderContributorStatsCard = async (
     limit = -1,
   } = options;
 
+  const orderBy = order_by;
   const lheight = parseInt(String(line_height), 10);
 
   // returns theme based colors with proper overrides and defaults
@@ -130,6 +132,7 @@ export const renderContributorStatsCard = async (
       return getImageBase64FromURL(url.toString());
     }),
   );
+
   let allContributorsByRepo: Contributor[][];
   if (!hide_contributor_rank) {
     allContributorsByRepo = await Promise.all(
@@ -139,6 +142,21 @@ export const renderContributorStatsCard = async (
       }),
     );
   }
+
+  const rankValues = {
+    'S+': 5,
+    S: 4,
+    'A+': 3,
+    A: 2,
+    'B+': 1,
+    B: 0,
+  };
+
+  const sortFunction =
+    orderBy == 'stars'
+      ? (a, b) => b.stars - a.stars
+      : (a, b) => rankValues[b.contributionRank] - rankValues[a.contributionRank];
+
   const transformedContributorStats = contributorStats
     .map((contributorStat, index) => {
       const { url, name, stargazerCount, numOfMyContributions } = contributorStat;
@@ -167,7 +185,7 @@ export const renderContributorStatsCard = async (
       }
     })
     .filter((repository) => !hide.includes(repository.rank))
-    .sort((a, b) => b.stars - a.stars);
+    .sort(sortFunction);
 
   let statItems = Object.keys(transformedContributorStats).map((key, index) =>
     // create the text nodes, and pass index so that we can calculate the line spacing
