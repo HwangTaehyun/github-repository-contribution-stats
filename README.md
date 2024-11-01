@@ -3,14 +3,11 @@
  <h2 align="center">GitHub Repository Contribution Stats</h2>
  <p align="center">Get dynamically generated your github repository contribution stats on your READMEs!</p>
 </p>
-
 # Features
-
 - [GitHub Repository Contribution Stats Card](#github-repository-contribution-stats-card)
 - [Themes](#themes)
 
 # GitHub Repository Contribution Stats Card
-
 Copy and paste this into your markdown content, and that's it. Simple!
 
 My project, which is based on [github-readme-stats](https://github.com/anuraghazra/github-readme-stats), focuses on showing GitHub repository contribution stats and applies the typescript to the original project. Refer to [ISSUE#2027](https://github.com/anuraghazra/github-readme-stats/issues/2027). Thank you [@anuraghazra](https://github.com/anuraghazra) for the awesome open-source project!
