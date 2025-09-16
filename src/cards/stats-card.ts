@@ -211,7 +211,7 @@ export const renderContributorStatsCard = async (
     progress: true,
   });
 
-  const width = 495;
+  const width = 450;
 
   const card = new Card({
     customTitle: custom_title,
