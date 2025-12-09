@@ -1,0 +1,80 @@
+name: 'GitHub Contributor Stats SVG Generator'
+description: 'Generate GitHub contributor stats SVG with rate limit awareness'
+author: 'github-contributor-stats'
+
+branding:
+  icon: 'bar-chart-2'
+  color: 'blue'
+
+inputs:
+  username:
+    description: 'GitHub username to generate stats for'
+    required: true
+  output-file:
+    description: 'Output SVG file path'
+    required: false
+    default: 'github-contributor-stats.svg'
+  combine-all-yearly-contributions:
+    description: 'Combine contributions from all years'
+    required: false
+    default: 'true'
+  hide-contributor-rank:
+    description: 'Hide contributor rank (set to false to show, but slower)'
+    required: false
+    default: 'true'
+  hide:
+    description: 'Comma-separated list of ranks to hide (e.g., "B,B+")'
+    required: false
+    default: ''
+  order-by:
+    description: 'Order by "stars" or "contributions"'
+    required: false
+    default: 'stars'
+  limit:
+    description: 'Limit number of repositories to show (-1 for no limit)'
+    required: false
+    default: '-1'
+  theme:
+    description: 'Theme name (default, dark, radical, etc.)'
+    required: false
+    default: 'default'
+  title-color:
+    description: 'Custom title color (hex without #)'
+    required: false
+  text-color:
+    description: 'Custom text color (hex without #)'
+    required: false
+  icon-color:
+    description: 'Custom icon color (hex without #)'
+    required: false
+  bg-color:
+    description: 'Custom background color (hex without #)'
+    required: false
+  border-color:
+    description: 'Custom border color (hex without #)'
+    required: false
+  border-radius:
+    description: 'Border radius in pixels'
+    required: false
+  hide-title:
+    description: 'Hide the title'
+    required: false
+    default: 'false'
+  hide-border:
+    description: 'Hide the border'
+    required: false
+    default: 'false'
+  custom-title:
+    description: 'Custom title text'
+    required: false
+  locale:
+    description: 'Locale for translations'
+    required: false
+
+outputs:
+  svg-path:
+    description: 'Path to the generated SVG file'
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'

@@ -4097,7 +4097,7 @@ function dump (req, callback) {
  * @private
  */
 
-var bytes = __webpack_require__(/*! bytes */ "./node_modules/bytes/index.js")
+var bytes = __webpack_require__(/*! bytes */ "./node_modules/body-parser/node_modules/bytes/index.js")
 var contentType = __webpack_require__(/*! content-type */ "./node_modules/content-type/index.js")
 var createError = __webpack_require__(/*! http-errors */ "./node_modules/http-errors/index.js")
 var debug = __webpack_require__(/*! debug */ "./node_modules/debug/src/index.js")('body-parser:json')
@@ -4342,7 +4342,7 @@ function typeChecker (type) {
  * Module dependencies.
  */
 
-var bytes = __webpack_require__(/*! bytes */ "./node_modules/bytes/index.js")
+var bytes = __webpack_require__(/*! bytes */ "./node_modules/body-parser/node_modules/bytes/index.js")
 var debug = __webpack_require__(/*! debug */ "./node_modules/debug/src/index.js")('body-parser:raw')
 var read = __webpack_require__(/*! ../read */ "./node_modules/body-parser/lib/read.js")
 var typeis = __webpack_require__(/*! type-is */ "./node_modules/type-is/index.js")
@@ -4454,7 +4454,7 @@ function typeChecker (type) {
  * Module dependencies.
  */
 
-var bytes = __webpack_require__(/*! bytes */ "./node_modules/bytes/index.js")
+var bytes = __webpack_require__(/*! bytes */ "./node_modules/body-parser/node_modules/bytes/index.js")
 var contentType = __webpack_require__(/*! content-type */ "./node_modules/content-type/index.js")
 var debug = __webpack_require__(/*! debug */ "./node_modules/debug/src/index.js")('body-parser:text')
 var read = __webpack_require__(/*! ../read */ "./node_modules/body-parser/lib/read.js")
@@ -4588,7 +4588,7 @@ function typeChecker (type) {
  * @private
  */
 
-var bytes = __webpack_require__(/*! bytes */ "./node_modules/bytes/index.js")
+var bytes = __webpack_require__(/*! bytes */ "./node_modules/body-parser/node_modules/bytes/index.js")
 var contentType = __webpack_require__(/*! content-type */ "./node_modules/content-type/index.js")
 var createError = __webpack_require__(/*! http-errors */ "./node_modules/http-errors/index.js")
 var debug = __webpack_require__(/*! debug */ "./node_modules/debug/src/index.js")('body-parser:urlencoded')
@@ -4862,10 +4862,10 @@ function typeChecker (type) {
 
 /***/ }),
 
-/***/ "./node_modules/bytes/index.js":
-/*!*************************************!*\
-  !*** ./node_modules/bytes/index.js ***!
-  \*************************************/
+/***/ "./node_modules/body-parser/node_modules/bytes/index.js":
+/*!**************************************************************!*\
+  !*** ./node_modules/body-parser/node_modules/bytes/index.js ***!
+  \**************************************************************/
 /***/ ((module) => {
 
 "use strict";
@@ -5035,6 +5035,176 @@ function parse(val) {
 
   if (isNaN(floatValue)) {
     return null;
+  }
+
+  return Math.floor(map[unit] * floatValue);
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/bytes/index.js":
+/*!*************************************!*\
+  !*** ./node_modules/bytes/index.js ***!
+  \*************************************/
+/***/ ((module) => {
+
+"use strict";
+/*!
+ * bytes
+ * Copyright(c) 2012-2014 TJ Holowaychuk
+ * Copyright(c) 2015 Jed Watson
+ * MIT Licensed
+ */
+
+
+
+/**
+ * Module exports.
+ * @public
+ */
+
+module.exports = bytes;
+module.exports.format = format;
+module.exports.parse = parse;
+
+/**
+ * Module variables.
+ * @private
+ */
+
+var formatThousandsRegExp = /\B(?=(\d{3})+(?!\d))/g;
+
+var formatDecimalsRegExp = /(?:\.0*|(\.[^0]+)0+)$/;
+
+var map = {
+  b:  1,
+  kb: 1 << 10,
+  mb: 1 << 20,
+  gb: 1 << 30,
+  tb: ((1 << 30) * 1024)
+};
+
+var parseRegExp = /^((-|\+)?(\d+(?:\.\d+)?)) *(kb|mb|gb|tb)$/i;
+
+/**
+ * Convert the given value in bytes into a string or parse to string to an integer in bytes.
+ *
+ * @param {string|number} value
+ * @param {{
+ *  case: [string],
+ *  decimalPlaces: [number]
+ *  fixedDecimals: [boolean]
+ *  thousandsSeparator: [string]
+ *  unitSeparator: [string]
+ *  }} [options] bytes options.
+ *
+ * @returns {string|number|null}
+ */
+
+function bytes(value, options) {
+  if (typeof value === 'string') {
+    return parse(value);
+  }
+
+  if (typeof value === 'number') {
+    return format(value, options);
+  }
+
+  return null;
+}
+
+/**
+ * Format the given value in bytes into a string.
+ *
+ * If the value is negative, it is kept as such. If it is a float,
+ * it is rounded.
+ *
+ * @param {number} value
+ * @param {object} [options]
+ * @param {number} [options.decimalPlaces=2]
+ * @param {number} [options.fixedDecimals=false]
+ * @param {string} [options.thousandsSeparator=]
+ * @param {string} [options.unit=]
+ * @param {string} [options.unitSeparator=]
+ *
+ * @returns {string|null}
+ * @public
+ */
+
+function format(value, options) {
+  if (!Number.isFinite(value)) {
+    return null;
+  }
+
+  var mag = Math.abs(value);
+  var thousandsSeparator = (options && options.thousandsSeparator) || '';
+  var unitSeparator = (options && options.unitSeparator) || '';
+  var decimalPlaces = (options && options.decimalPlaces !== undefined) ? options.decimalPlaces : 2;
+  var fixedDecimals = Boolean(options && options.fixedDecimals);
+  var unit = (options && options.unit) || '';
+
+  if (!unit || !map[unit.toLowerCase()]) {
+    if (mag >= map.tb) {
+      unit = 'TB';
+    } else if (mag >= map.gb) {
+      unit = 'GB';
+    } else if (mag >= map.mb) {
+      unit = 'MB';
+    } else if (mag >= map.kb) {
+      unit = 'KB';
+    } else {
+      unit = 'B';
+    }
+  }
+
+  var val = value / map[unit.toLowerCase()];
+  var str = val.toFixed(decimalPlaces);
+
+  if (!fixedDecimals) {
+    str = str.replace(formatDecimalsRegExp, '$1');
+  }
+
+  if (thousandsSeparator) {
+    str = str.replace(formatThousandsRegExp, thousandsSeparator);
+  }
+
+  return str + unitSeparator + unit;
+}
+
+/**
+ * Parse the string value into an integer in bytes.
+ *
+ * If no unit is given, it is assumed the value is in bytes.
+ *
+ * @param {number|string} val
+ *
+ * @returns {number|null}
+ * @public
+ */
+
+function parse(val) {
+  if (typeof val === 'number' && !isNaN(val)) {
+    return val;
+  }
+
+  if (typeof val !== 'string') {
+    return null;
+  }
+
+  // Test if the string passed is valid
+  var results = parseRegExp.exec(val);
+  var floatValue;
+  var unit = 'b';
+
+  if (!results) {
+    // Nothing could be extracted from the given string
+    floatValue = parseInt(val, 10);
+    unit = 'b'
+  } else {
+    // Retrieve the value and the unit
+    floatValue = parseFloat(results[1]);
+    unit = results[4].toLowerCase();
   }
 
   return Math.floor(map[unit] * floatValue);
@@ -5438,8 +5608,8 @@ function compressible (type) {
  */
 
 var accepts = __webpack_require__(/*! accepts */ "./node_modules/accepts/index.js")
-var Buffer = (__webpack_require__(/*! safe-buffer */ "./node_modules/compression/node_modules/safe-buffer/index.js").Buffer)
-var bytes = __webpack_require__(/*! bytes */ "./node_modules/compression/node_modules/bytes/index.js")
+var Buffer = (__webpack_require__(/*! safe-buffer */ "./node_modules/safe-buffer/index.js").Buffer)
+var bytes = __webpack_require__(/*! bytes */ "./node_modules/bytes/index.js")
 var compressible = __webpack_require__(/*! compressible */ "./node_modules/compressible/index.js")
 var debug = __webpack_require__(/*! debug */ "./node_modules/debug/src/index.js")('compression')
 var onHeaders = __webpack_require__(/*! on-headers */ "./node_modules/on-headers/index.js")
@@ -5713,248 +5883,6 @@ function toBuffer (chunk, encoding) {
 
 /***/ }),
 
-/***/ "./node_modules/compression/node_modules/bytes/index.js":
-/*!**************************************************************!*\
-  !*** ./node_modules/compression/node_modules/bytes/index.js ***!
-  \**************************************************************/
-/***/ ((module) => {
-
-"use strict";
-/*!
- * bytes
- * Copyright(c) 2012-2014 TJ Holowaychuk
- * Copyright(c) 2015 Jed Watson
- * MIT Licensed
- */
-
-
-
-/**
- * Module exports.
- * @public
- */
-
-module.exports = bytes;
-module.exports.format = format;
-module.exports.parse = parse;
-
-/**
- * Module variables.
- * @private
- */
-
-var formatThousandsRegExp = /\B(?=(\d{3})+(?!\d))/g;
-
-var formatDecimalsRegExp = /(?:\.0*|(\.[^0]+)0+)$/;
-
-var map = {
-  b:  1,
-  kb: 1 << 10,
-  mb: 1 << 20,
-  gb: 1 << 30,
-  tb: ((1 << 30) * 1024)
-};
-
-var parseRegExp = /^((-|\+)?(\d+(?:\.\d+)?)) *(kb|mb|gb|tb)$/i;
-
-/**
- * Convert the given value in bytes into a string or parse to string to an integer in bytes.
- *
- * @param {string|number} value
- * @param {{
- *  case: [string],
- *  decimalPlaces: [number]
- *  fixedDecimals: [boolean]
- *  thousandsSeparator: [string]
- *  unitSeparator: [string]
- *  }} [options] bytes options.
- *
- * @returns {string|number|null}
- */
-
-function bytes(value, options) {
-  if (typeof value === 'string') {
-    return parse(value);
-  }
-
-  if (typeof value === 'number') {
-    return format(value, options);
-  }
-
-  return null;
-}
-
-/**
- * Format the given value in bytes into a string.
- *
- * If the value is negative, it is kept as such. If it is a float,
- * it is rounded.
- *
- * @param {number} value
- * @param {object} [options]
- * @param {number} [options.decimalPlaces=2]
- * @param {number} [options.fixedDecimals=false]
- * @param {string} [options.thousandsSeparator=]
- * @param {string} [options.unit=]
- * @param {string} [options.unitSeparator=]
- *
- * @returns {string|null}
- * @public
- */
-
-function format(value, options) {
-  if (!Number.isFinite(value)) {
-    return null;
-  }
-
-  var mag = Math.abs(value);
-  var thousandsSeparator = (options && options.thousandsSeparator) || '';
-  var unitSeparator = (options && options.unitSeparator) || '';
-  var decimalPlaces = (options && options.decimalPlaces !== undefined) ? options.decimalPlaces : 2;
-  var fixedDecimals = Boolean(options && options.fixedDecimals);
-  var unit = (options && options.unit) || '';
-
-  if (!unit || !map[unit.toLowerCase()]) {
-    if (mag >= map.tb) {
-      unit = 'TB';
-    } else if (mag >= map.gb) {
-      unit = 'GB';
-    } else if (mag >= map.mb) {
-      unit = 'MB';
-    } else if (mag >= map.kb) {
-      unit = 'KB';
-    } else {
-      unit = 'B';
-    }
-  }
-
-  var val = value / map[unit.toLowerCase()];
-  var str = val.toFixed(decimalPlaces);
-
-  if (!fixedDecimals) {
-    str = str.replace(formatDecimalsRegExp, '$1');
-  }
-
-  if (thousandsSeparator) {
-    str = str.replace(formatThousandsRegExp, thousandsSeparator);
-  }
-
-  return str + unitSeparator + unit;
-}
-
-/**
- * Parse the string value into an integer in bytes.
- *
- * If no unit is given, it is assumed the value is in bytes.
- *
- * @param {number|string} val
- *
- * @returns {number|null}
- * @public
- */
-
-function parse(val) {
-  if (typeof val === 'number' && !isNaN(val)) {
-    return val;
-  }
-
-  if (typeof val !== 'string') {
-    return null;
-  }
-
-  // Test if the string passed is valid
-  var results = parseRegExp.exec(val);
-  var floatValue;
-  var unit = 'b';
-
-  if (!results) {
-    // Nothing could be extracted from the given string
-    floatValue = parseInt(val, 10);
-    unit = 'b'
-  } else {
-    // Retrieve the value and the unit
-    floatValue = parseFloat(results[1]);
-    unit = results[4].toLowerCase();
-  }
-
-  return Math.floor(map[unit] * floatValue);
-}
-
-
-/***/ }),
-
-/***/ "./node_modules/compression/node_modules/safe-buffer/index.js":
-/*!********************************************************************!*\
-  !*** ./node_modules/compression/node_modules/safe-buffer/index.js ***!
-  \********************************************************************/
-/***/ ((module, exports, __webpack_require__) => {
-
-/* eslint-disable node/no-deprecated-api */
-var buffer = __webpack_require__(/*! buffer */ "buffer")
-var Buffer = buffer.Buffer
-
-// alternative to using Object.keys for old browsers
-function copyProps (src, dst) {
-  for (var key in src) {
-    dst[key] = src[key]
-  }
-}
-if (Buffer.from && Buffer.alloc && Buffer.allocUnsafe && Buffer.allocUnsafeSlow) {
-  module.exports = buffer
-} else {
-  // Copy properties from require('buffer')
-  copyProps(buffer, exports)
-  exports.Buffer = SafeBuffer
-}
-
-function SafeBuffer (arg, encodingOrOffset, length) {
-  return Buffer(arg, encodingOrOffset, length)
-}
-
-// Copy static methods from Buffer
-copyProps(Buffer, SafeBuffer)
-
-SafeBuffer.from = function (arg, encodingOrOffset, length) {
-  if (typeof arg === 'number') {
-    throw new TypeError('Argument must not be a number')
-  }
-  return Buffer(arg, encodingOrOffset, length)
-}
-
-SafeBuffer.alloc = function (size, fill, encoding) {
-  if (typeof size !== 'number') {
-    throw new TypeError('Argument must be a number')
-  }
-  var buf = Buffer(size)
-  if (fill !== undefined) {
-    if (typeof encoding === 'string') {
-      buf.fill(fill, encoding)
-    } else {
-      buf.fill(fill)
-    }
-  } else {
-    buf.fill(0)
-  }
-  return buf
-}
-
-SafeBuffer.allocUnsafe = function (size) {
-  if (typeof size !== 'number') {
-    throw new TypeError('Argument must be a number')
-  }
-  return Buffer(size)
-}
-
-SafeBuffer.allocUnsafeSlow = function (size) {
-  if (typeof size !== 'number') {
-    throw new TypeError('Argument must be a number')
-  }
-  return buffer.SlowBuffer(size)
-}
-
-
-/***/ }),
-
 /***/ "./node_modules/content-disposition/index.js":
 /*!***************************************************!*\
   !*** ./node_modules/content-disposition/index.js ***!
@@ -5984,7 +5912,7 @@ module.exports.parse = parse
  */
 
 var basename = (__webpack_require__(/*! path */ "path").basename)
-var Buffer = (__webpack_require__(/*! safe-buffer */ "./node_modules/safe-buffer/index.js").Buffer)
+var Buffer = (__webpack_require__(/*! safe-buffer */ "./node_modules/content-disposition/node_modules/safe-buffer/index.js").Buffer)
 
 /**
  * RegExp to match non attr-char, *after* encodeURIComponent (i.e. not including "%")
@@ -6419,6 +6347,81 @@ function ustring (val) {
 function ContentDisposition (type, parameters) {
   this.type = type
   this.parameters = parameters
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/content-disposition/node_modules/safe-buffer/index.js":
+/*!****************************************************************************!*\
+  !*** ./node_modules/content-disposition/node_modules/safe-buffer/index.js ***!
+  \****************************************************************************/
+/***/ ((module, exports, __webpack_require__) => {
+
+/*! safe-buffer. MIT License. Feross Aboukhadijeh <https://feross.org/opensource> */
+/* eslint-disable node/no-deprecated-api */
+var buffer = __webpack_require__(/*! buffer */ "buffer")
+var Buffer = buffer.Buffer
+
+// alternative to using Object.keys for old browsers
+function copyProps (src, dst) {
+  for (var key in src) {
+    dst[key] = src[key]
+  }
+}
+if (Buffer.from && Buffer.alloc && Buffer.allocUnsafe && Buffer.allocUnsafeSlow) {
+  module.exports = buffer
+} else {
+  // Copy properties from require('buffer')
+  copyProps(buffer, exports)
+  exports.Buffer = SafeBuffer
+}
+
+function SafeBuffer (arg, encodingOrOffset, length) {
+  return Buffer(arg, encodingOrOffset, length)
+}
+
+SafeBuffer.prototype = Object.create(Buffer.prototype)
+
+// Copy static methods from Buffer
+copyProps(Buffer, SafeBuffer)
+
+SafeBuffer.from = function (arg, encodingOrOffset, length) {
+  if (typeof arg === 'number') {
+    throw new TypeError('Argument must not be a number')
+  }
+  return Buffer(arg, encodingOrOffset, length)
+}
+
+SafeBuffer.alloc = function (size, fill, encoding) {
+  if (typeof size !== 'number') {
+    throw new TypeError('Argument must be a number')
+  }
+  var buf = Buffer(size)
+  if (fill !== undefined) {
+    if (typeof encoding === 'string') {
+      buf.fill(fill, encoding)
+    } else {
+      buf.fill(fill)
+    }
+  } else {
+    buf.fill(0)
+  }
+  return buf
+}
+
+SafeBuffer.allocUnsafe = function (size) {
+  if (typeof size !== 'number') {
+    throw new TypeError('Argument must be a number')
+  }
+  return Buffer(size)
+}
+
+SafeBuffer.allocUnsafeSlow = function (size) {
+  if (typeof size !== 'number') {
+    throw new TypeError('Argument must be a number')
+  }
+  return buffer.SlowBuffer(size)
 }
 
 
@@ -10467,7 +10470,7 @@ function defineGetter(obj, name, getter) {
  * @private
  */
 
-var Buffer = (__webpack_require__(/*! safe-buffer */ "./node_modules/safe-buffer/index.js").Buffer)
+var Buffer = (__webpack_require__(/*! safe-buffer */ "./node_modules/express/node_modules/safe-buffer/index.js").Buffer)
 var contentDisposition = __webpack_require__(/*! content-disposition */ "./node_modules/content-disposition/index.js");
 var createError = __webpack_require__(/*! http-errors */ "./node_modules/http-errors/index.js")
 var deprecate = __webpack_require__(/*! depd */ "./node_modules/depd/index.js")('express');
@@ -12759,7 +12762,7 @@ methods.forEach(function(method){
  * @api private
  */
 
-var Buffer = (__webpack_require__(/*! safe-buffer */ "./node_modules/safe-buffer/index.js").Buffer)
+var Buffer = (__webpack_require__(/*! safe-buffer */ "./node_modules/express/node_modules/safe-buffer/index.js").Buffer)
 var contentDisposition = __webpack_require__(/*! content-disposition */ "./node_modules/content-disposition/index.js");
 var contentType = __webpack_require__(/*! content-type */ "./node_modules/content-type/index.js");
 var deprecate = __webpack_require__(/*! depd */ "./node_modules/depd/index.js")('express');
@@ -13261,6 +13264,81 @@ webpackEmptyContext.keys = () => ([]);
 webpackEmptyContext.resolve = webpackEmptyContext;
 webpackEmptyContext.id = "./node_modules/express/lib sync recursive";
 module.exports = webpackEmptyContext;
+
+/***/ }),
+
+/***/ "./node_modules/express/node_modules/safe-buffer/index.js":
+/*!****************************************************************!*\
+  !*** ./node_modules/express/node_modules/safe-buffer/index.js ***!
+  \****************************************************************/
+/***/ ((module, exports, __webpack_require__) => {
+
+/*! safe-buffer. MIT License. Feross Aboukhadijeh <https://feross.org/opensource> */
+/* eslint-disable node/no-deprecated-api */
+var buffer = __webpack_require__(/*! buffer */ "buffer")
+var Buffer = buffer.Buffer
+
+// alternative to using Object.keys for old browsers
+function copyProps (src, dst) {
+  for (var key in src) {
+    dst[key] = src[key]
+  }
+}
+if (Buffer.from && Buffer.alloc && Buffer.allocUnsafe && Buffer.allocUnsafeSlow) {
+  module.exports = buffer
+} else {
+  // Copy properties from require('buffer')
+  copyProps(buffer, exports)
+  exports.Buffer = SafeBuffer
+}
+
+function SafeBuffer (arg, encodingOrOffset, length) {
+  return Buffer(arg, encodingOrOffset, length)
+}
+
+SafeBuffer.prototype = Object.create(Buffer.prototype)
+
+// Copy static methods from Buffer
+copyProps(Buffer, SafeBuffer)
+
+SafeBuffer.from = function (arg, encodingOrOffset, length) {
+  if (typeof arg === 'number') {
+    throw new TypeError('Argument must not be a number')
+  }
+  return Buffer(arg, encodingOrOffset, length)
+}
+
+SafeBuffer.alloc = function (size, fill, encoding) {
+  if (typeof size !== 'number') {
+    throw new TypeError('Argument must be a number')
+  }
+  var buf = Buffer(size)
+  if (fill !== undefined) {
+    if (typeof encoding === 'string') {
+      buf.fill(fill, encoding)
+    } else {
+      buf.fill(fill)
+    }
+  } else {
+    buf.fill(0)
+  }
+  return buf
+}
+
+SafeBuffer.allocUnsafe = function (size) {
+  if (typeof size !== 'number') {
+    throw new TypeError('Argument must be a number')
+  }
+  return Buffer(size)
+}
+
+SafeBuffer.allocUnsafeSlow = function (size) {
+  if (typeof size !== 'number') {
+    throw new TypeError('Argument must be a number')
+  }
+  return buffer.SlowBuffer(size)
+}
+
 
 /***/ }),
 
@@ -41185,7 +41263,7 @@ function sortByRangeStart (a, b) {
  */
 
 var asyncHooks = tryRequireAsyncHooks()
-var bytes = __webpack_require__(/*! bytes */ "./node_modules/bytes/index.js")
+var bytes = __webpack_require__(/*! bytes */ "./node_modules/raw-body/node_modules/bytes/index.js")
 var createError = __webpack_require__(/*! http-errors */ "./node_modules/http-errors/index.js")
 var iconv = __webpack_require__(/*! iconv-lite */ "./node_modules/iconv-lite/lib/index.js")
 var unpipe = __webpack_require__(/*! unpipe */ "./node_modules/unpipe/index.js")
@@ -41503,13 +41581,193 @@ function wrap (fn) {
 
 /***/ }),
 
+/***/ "./node_modules/raw-body/node_modules/bytes/index.js":
+/*!***********************************************************!*\
+  !*** ./node_modules/raw-body/node_modules/bytes/index.js ***!
+  \***********************************************************/
+/***/ ((module) => {
+
+"use strict";
+/*!
+ * bytes
+ * Copyright(c) 2012-2014 TJ Holowaychuk
+ * Copyright(c) 2015 Jed Watson
+ * MIT Licensed
+ */
+
+
+
+/**
+ * Module exports.
+ * @public
+ */
+
+module.exports = bytes;
+module.exports.format = format;
+module.exports.parse = parse;
+
+/**
+ * Module variables.
+ * @private
+ */
+
+var formatThousandsRegExp = /\B(?=(\d{3})+(?!\d))/g;
+
+var formatDecimalsRegExp = /(?:\.0*|(\.[^0]+)0+)$/;
+
+var map = {
+  b:  1,
+  kb: 1 << 10,
+  mb: 1 << 20,
+  gb: 1 << 30,
+  tb: Math.pow(1024, 4),
+  pb: Math.pow(1024, 5),
+};
+
+var parseRegExp = /^((-|\+)?(\d+(?:\.\d+)?)) *(kb|mb|gb|tb|pb)$/i;
+
+/**
+ * Convert the given value in bytes into a string or parse to string to an integer in bytes.
+ *
+ * @param {string|number} value
+ * @param {{
+ *  case: [string],
+ *  decimalPlaces: [number]
+ *  fixedDecimals: [boolean]
+ *  thousandsSeparator: [string]
+ *  unitSeparator: [string]
+ *  }} [options] bytes options.
+ *
+ * @returns {string|number|null}
+ */
+
+function bytes(value, options) {
+  if (typeof value === 'string') {
+    return parse(value);
+  }
+
+  if (typeof value === 'number') {
+    return format(value, options);
+  }
+
+  return null;
+}
+
+/**
+ * Format the given value in bytes into a string.
+ *
+ * If the value is negative, it is kept as such. If it is a float,
+ * it is rounded.
+ *
+ * @param {number} value
+ * @param {object} [options]
+ * @param {number} [options.decimalPlaces=2]
+ * @param {number} [options.fixedDecimals=false]
+ * @param {string} [options.thousandsSeparator=]
+ * @param {string} [options.unit=]
+ * @param {string} [options.unitSeparator=]
+ *
+ * @returns {string|null}
+ * @public
+ */
+
+function format(value, options) {
+  if (!Number.isFinite(value)) {
+    return null;
+  }
+
+  var mag = Math.abs(value);
+  var thousandsSeparator = (options && options.thousandsSeparator) || '';
+  var unitSeparator = (options && options.unitSeparator) || '';
+  var decimalPlaces = (options && options.decimalPlaces !== undefined) ? options.decimalPlaces : 2;
+  var fixedDecimals = Boolean(options && options.fixedDecimals);
+  var unit = (options && options.unit) || '';
+
+  if (!unit || !map[unit.toLowerCase()]) {
+    if (mag >= map.pb) {
+      unit = 'PB';
+    } else if (mag >= map.tb) {
+      unit = 'TB';
+    } else if (mag >= map.gb) {
+      unit = 'GB';
+    } else if (mag >= map.mb) {
+      unit = 'MB';
+    } else if (mag >= map.kb) {
+      unit = 'KB';
+    } else {
+      unit = 'B';
+    }
+  }
+
+  var val = value / map[unit.toLowerCase()];
+  var str = val.toFixed(decimalPlaces);
+
+  if (!fixedDecimals) {
+    str = str.replace(formatDecimalsRegExp, '$1');
+  }
+
+  if (thousandsSeparator) {
+    str = str.split('.').map(function (s, i) {
+      return i === 0
+        ? s.replace(formatThousandsRegExp, thousandsSeparator)
+        : s
+    }).join('.');
+  }
+
+  return str + unitSeparator + unit;
+}
+
+/**
+ * Parse the string value into an integer in bytes.
+ *
+ * If no unit is given, it is assumed the value is in bytes.
+ *
+ * @param {number|string} val
+ *
+ * @returns {number|null}
+ * @public
+ */
+
+function parse(val) {
+  if (typeof val === 'number' && !isNaN(val)) {
+    return val;
+  }
+
+  if (typeof val !== 'string') {
+    return null;
+  }
+
+  // Test if the string passed is valid
+  var results = parseRegExp.exec(val);
+  var floatValue;
+  var unit = 'b';
+
+  if (!results) {
+    // Nothing could be extracted from the given string
+    floatValue = parseInt(val, 10);
+    unit = 'b'
+  } else {
+    // Retrieve the value and the unit
+    floatValue = parseFloat(results[1]);
+    unit = results[4].toLowerCase();
+  }
+
+  if (isNaN(floatValue)) {
+    return null;
+  }
+
+  return Math.floor(map[unit] * floatValue);
+}
+
+
+/***/ }),
+
 /***/ "./node_modules/safe-buffer/index.js":
 /*!*******************************************!*\
   !*** ./node_modules/safe-buffer/index.js ***!
   \*******************************************/
 /***/ ((module, exports, __webpack_require__) => {
 
-/*! safe-buffer. MIT License. Feross Aboukhadijeh <https://feross.org/opensource> */
 /* eslint-disable node/no-deprecated-api */
 var buffer = __webpack_require__(/*! buffer */ "buffer")
 var Buffer = buffer.Buffer
@@ -41531,8 +41789,6 @@ if (Buffer.from && Buffer.alloc && Buffer.allocUnsafe && Buffer.allocUnsafeSlow)
 function SafeBuffer (arg, encodingOrOffset, length) {
   return Buffer(arg, encodingOrOffset, length)
 }
-
-SafeBuffer.prototype = Object.create(Buffer.prototype)
 
 // Copy static methods from Buffer
 copyProps(Buffer, SafeBuffer)
@@ -43617,16 +43873,22 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "calculateContributionRank": () => (/* binding */ calculateContributionRank)
 /* harmony export */ });
 const calculateContributionRank = (name, contributors, numOfMyContributions) => {
-    contributors = contributors.filter((contributor) => contributor.type === 'User');
-    const numOfOverRankContributors = contributors.filter((contributor) => contributor.contributions > numOfMyContributions);
-    const rankOfContribution = ((contributors.length - numOfOverRankContributors.length) / contributors.length) *
-        100;
+    if (!Array.isArray(contributors)) {
+        throw new Error(`calculateContributionRank: contributors is not an array for ${name}`);
+    }
+    const users = contributors.filter((contributor) => contributor.type === 'User');
+    if (users.length === 0) {
+        throw new Error(`calculateContributionRank: no contributors found for ${name}. ` +
+            `This usually means the GitHub API request failed (e.g., 401 Unauthorized). ` +
+            `Make sure you're using a Personal Access Token with 'public_repo' scope, not GITHUB_TOKEN.`);
+    }
+    const numOfOverRankContributors = users.filter((contributor) => contributor.contributions > numOfMyContributions).length;
+    const rankOfContribution = ((users.length - numOfOverRankContributors) / users.length) * 100;
     const RANK_S_PLUS_VALUE = 90;
     const RANK_S_VALUE = 80;
     const RANK_A_PLUS_VALUE = 70;
     const RANK_A_VALUE = 60;
     const RANK_B_PLUS_VALUE = 50;
-    const RANK_B_VALUE = 1;
     if (rankOfContribution >= RANK_S_PLUS_VALUE)
         return 'S+';
     if (rankOfContribution >= RANK_S_VALUE)
@@ -43707,7 +43969,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-const token = process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
 const createTextNode = ({ imageBase64, name, rank, contributionRank, index, height }) => {
     const staggerDelay = (index + 3) * 150;
     const calculateTextWidth = (text) => {
@@ -43767,7 +44028,8 @@ const createTextNode = ({ imageBase64, name, rank, contributionRank, index, heig
   `;
 };
 const renderContributorStatsCard = async (username, name, contributorStats = [], options = {}) => {
-    const { hide = [], line_height = 25, hide_title = false, hide_border = false, hide_contributor_rank = true, order_by = 'stars', title_color, icon_color, text_color, bg_color, border_radius, border_color, custom_title, theme = 'default', locale, limit = -1, } = options;
+    const { hide = [], line_height = 25, hide_title = false, hide_border = false, hide_contributor_rank = true, order_by = 'stars', title_color, icon_color, text_color, bg_color, border_radius, border_color, custom_title, theme = 'default', locale, limit = -1, contributor_fetcher, token, } = options;
+    const authToken = token || process.env.GITHUB_PERSONAL_ACCESS_TOKEN || '';
     const orderBy = order_by;
     const lheight = parseInt(String(line_height), 10);
     const { titleColor, textColor, iconColor, bgColor, borderColor } = (0,_common_utils__WEBPACK_IMPORTED_MODULE_5__.getCardColors)({
@@ -43790,10 +44052,13 @@ const renderContributorStatsCard = async (username, name, contributorStats = [],
     }));
     let allContributorsByRepo;
     if (!hide_contributor_rank) {
-        allContributorsByRepo = await Promise.all(Object.keys(contributorStats).map((key, index) => {
+        const fetchContributors = contributor_fetcher || getContributors__WEBPACK_IMPORTED_MODULE_8__.getContributors;
+        allContributorsByRepo = [];
+        for (const key of Object.keys(contributorStats)) {
             const nameWithOwner = contributorStats[key].nameWithOwner;
-            return (0,getContributors__WEBPACK_IMPORTED_MODULE_8__.getContributors)(username, nameWithOwner, token);
-        }));
+            const contributors = await fetchContributors(username, nameWithOwner, authToken);
+            allContributorsByRepo.push(contributors);
+        }
     }
     const rankValues = {
         'S+': 5,
@@ -44411,12 +44676,118 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_1__);
 
 
-async function fetchAllContributorStats(username) {
+const MAX_REPOS_PER_QUERY = 100;
+const getToken = (token) => {
+    return token || process.env.GITHUB_PERSONAL_ACCESS_TOKEN || '';
+};
+async function fetchContributionsForRange(username, range, token) {
+    const response = await axios__WEBPACK_IMPORTED_MODULE_0___default()({
+        url: 'https://api.github.com/graphql',
+        method: 'POST',
+        headers: {
+            Authorization: `token ${token}`,
+        },
+        validateStatus: (status) => status == 200,
+        data: {
+            query: `query {
+        user(login: ${JSON.stringify(username)}) {
+          contributionsCollection(from: "${range.from}", to: "${range.to}") {
+            commitContributionsByRepository(maxRepositories: ${MAX_REPOS_PER_QUERY}) {
+              contributions {
+                totalCount
+              }
+              repository {
+                owner {
+                  id
+                  avatarUrl
+                }
+                isInOrganization
+                url
+                homepageUrl
+                name
+                nameWithOwner
+                stargazerCount
+                openGraphImageUrl
+                defaultBranchRef {
+                  target {
+                    ... on Commit {
+                      history {
+                        totalCount
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }`,
+        },
+    });
+    const commitContributionsByRepository = response.data.data.user.contributionsCollection.commitContributionsByRepository;
+    return commitContributionsByRepository.map(({ contributions, repository }) => ({
+        nameWithOwner: repository.nameWithOwner,
+        repository,
+        contributions: contributions.totalCount,
+    }));
+}
+function splitTimeRange(range) {
+    const from = new Date(range.from);
+    const to = new Date(range.to);
+    const diffMonths = (to.getFullYear() - from.getFullYear()) * 12 + (to.getMonth() - from.getMonth());
+    if (diffMonths >= 6) {
+        const mid = new Date(from);
+        mid.setMonth(mid.getMonth() + Math.floor(diffMonths / 2));
+        mid.setDate(1);
+        const midEnd = new Date(mid);
+        midEnd.setDate(midEnd.getDate() - 1);
+        midEnd.setHours(23, 59, 59, 999);
+        return [
+            { from: range.from, to: midEnd.toISOString() },
+            { from: mid.toISOString(), to: range.to },
+        ];
+    }
+    else if (diffMonths >= 2) {
+        const ranges = [];
+        let current = new Date(from);
+        while (current < to) {
+            const monthStart = new Date(current);
+            const monthEnd = new Date(current);
+            monthEnd.setMonth(monthEnd.getMonth() + 1);
+            monthEnd.setDate(0);
+            monthEnd.setHours(23, 59, 59, 999);
+            if (monthEnd > to) {
+                ranges.push({ from: monthStart.toISOString(), to: range.to });
+            }
+            else {
+                ranges.push({ from: monthStart.toISOString(), to: monthEnd.toISOString() });
+            }
+            current.setMonth(current.getMonth() + 1);
+            current.setDate(1);
+        }
+        return ranges;
+    }
+    return [range];
+}
+async function fetchContributionsWithSplitting(username, range, token, depth = 0) {
+    const results = await fetchContributionsForRange(username, range, token);
+    if (results.length >= MAX_REPOS_PER_QUERY && depth < 4) {
+        const subRanges = splitTimeRange(range);
+        if (subRanges.length === 1) {
+            return results;
+        }
+        const subResults = await Promise.all(subRanges.map((subRange) => fetchContributionsWithSplitting(username, subRange, token, depth + 1)));
+        return subResults.flat();
+    }
+    return results;
+}
+async function fetchAllContributorStats(username, token) {
+    const authToken = getToken(token);
     const { data: { data: { user: { id, name, contributionsCollection: { contributionYears }, }, }, }, } = await axios__WEBPACK_IMPORTED_MODULE_0___default()({
         url: 'https://api.github.com/graphql',
         method: 'POST',
         headers: {
-            Authorization: `token ${process.env.GITHUB_PERSONAL_ACCESS_TOKEN}`,
+            Authorization: `token ${authToken}`,
         },
         validateStatus: (status) => status == 200,
         data: {
@@ -44431,67 +44802,26 @@ async function fetchAllContributorStats(username) {
         }`,
         },
     });
+    const yearlyContributions = await Promise.all(contributionYears.map((year) => fetchContributionsWithSplitting(username, {
+        from: `${year}-01-01T00:00:00Z`,
+        to: `${year}-12-31T23:59:59Z`,
+    }, authToken)));
+    const allContributions = yearlyContributions.flat();
+    const nodes = lodash__WEBPACK_IMPORTED_MODULE_1___default().chain(allContributions)
+        .groupBy('nameWithOwner')
+        .map((contributions) => {
+        const totalCount = lodash__WEBPACK_IMPORTED_MODULE_1___default().sumBy(contributions, 'contributions');
+        return {
+            ...contributions[0].repository,
+            numOfMyContributions: totalCount,
+        };
+    })
+        .value();
     return {
         id,
         name,
         repositoriesContributedTo: {
-            nodes: lodash__WEBPACK_IMPORTED_MODULE_1___default().chain((await Promise.all(contributionYears.map((contributionYear) => axios__WEBPACK_IMPORTED_MODULE_0___default()({
-                url: 'https://api.github.com/graphql',
-                method: 'POST',
-                headers: {
-                    Authorization: `token ${process.env.GITHUB_PERSONAL_ACCESS_TOKEN}`,
-                },
-                validateStatus: (status) => status == 200,
-                data: {
-                    query: `query {
-                      user(login: ${JSON.stringify(username)}) {
-                        contributionsCollection(from: "${contributionYear}-01-01T00:00:00Z") {
-                          commitContributionsByRepository(maxRepositories: 100) {
-                            contributions {
-                              totalCount
-                            } 
-                            repository {
-                              owner {
-                                id
-                                avatarUrl
-                              }
-                              isInOrganization
-                              url
-                              homepageUrl
-                              name
-                              nameWithOwner
-                              stargazerCount
-                              openGraphImageUrl
-                              defaultBranchRef {
-                                target {
-                                  ... on Commit {
-                                    history {
-                                      totalCount
-                                    }
-                                  }
-                                }
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }`,
-                },
-            })))).flatMap(({ data: { data: { user: { contributionsCollection: { commitContributionsByRepository }, }, }, }, }) => commitContributionsByRepository.map(({ contributions, repository }) => [
-                repository.nameWithOwner,
-                repository,
-                contributions.totalCount,
-            ])))
-                .groupBy(([key]) => key)
-                .map((groupedArrays) => {
-                const key = groupedArrays[0][0];
-                const totalCount = lodash__WEBPACK_IMPORTED_MODULE_1___default().sumBy(groupedArrays, ([, , value]) => value);
-                return {
-                    ...groupedArrays[0].slice(1, -1)[0],
-                    numOfMyContributions: totalCount,
-                };
-            })
-                .value(),
+            nodes,
         },
     };
 }
@@ -44513,13 +44843,17 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_0__);
 
-const fetchContributorStats = async (username) => {
+const getToken = (token) => {
+    return token || process.env.GITHUB_PERSONAL_ACCESS_TOKEN || '';
+};
+const fetchContributorStats = async (username, token) => {
+    const authToken = getToken(token);
     try {
         const response = await axios__WEBPACK_IMPORTED_MODULE_0___default()({
             url: 'https://api.github.com/graphql',
             method: 'POST',
             headers: {
-                Authorization: `token ${process.env.GITHUB_PERSONAL_ACCESS_TOKEN}`,
+                Authorization: `token ${authToken}`,
             },
             data: {
                 query: `query {
@@ -53850,10 +54184,11 @@ app.get('/api', async (req, res) => {
     if (locale && !(0,_translations__WEBPACK_IMPORTED_MODULE_4__.isLocaleAvailable)(locale)) {
         return res.send((0,_common_utils__WEBPACK_IMPORTED_MODULE_1__.renderError)('Something went wrong', 'Language not found'));
     }
+    const token = process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
     try {
         const result = await (combine_all_yearly_contributions
-            ? (0,_fetchAllContributorStats__WEBPACK_IMPORTED_MODULE_3__.fetchAllContributorStats)(username)
-            : (0,_fetchContributorStats__WEBPACK_IMPORTED_MODULE_2__.fetchContributorStats)(username));
+            ? (0,_fetchAllContributorStats__WEBPACK_IMPORTED_MODULE_3__.fetchAllContributorStats)(username, token)
+            : (0,_fetchContributorStats__WEBPACK_IMPORTED_MODULE_2__.fetchContributorStats)(username, token));
         const name = result.name;
         const contributorStats = result.repositoriesContributedTo.nodes;
         const cacheSeconds = (0,_common_utils__WEBPACK_IMPORTED_MODULE_1__.clampValue)(parseInt(cache_seconds || _common_utils__WEBPACK_IMPORTED_MODULE_1__.CONSTANTS.FOUR_HOURS, 10), _common_utils__WEBPACK_IMPORTED_MODULE_1__.CONSTANTS.FOUR_HOURS, _common_utils__WEBPACK_IMPORTED_MODULE_1__.CONSTANTS.ONE_DAY);
@@ -53875,6 +54210,7 @@ app.get('/api', async (req, res) => {
             theme,
             locale: locale ? locale.toLowerCase() : null,
             limit,
+            token,
         }));
     }
     catch (err) {
