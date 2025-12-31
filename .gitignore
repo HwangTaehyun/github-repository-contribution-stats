@@ -34,3 +34,6 @@ release
 
 # output
 output
+
+# action build artifacts (keep action/dist/ for GitHub Action)
+action/dist/*.map

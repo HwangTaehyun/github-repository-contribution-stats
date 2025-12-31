@@ -16,6 +16,13 @@ import { Contributor, getContributors } from 'getContributors';
 
 const token = process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
 
+// Type for custom contributor fetcher function
+export type ContributorFetcher = (
+  username: string,
+  nameWithOwner: string,
+  token: string,
+) => Promise<Contributor[]>;
+
 const createTextNode = ({ imageBase64, name, rank, contributionRank, index, height }) => {
   const staggerDelay = (index + 3) * 150;
 
@@ -104,6 +111,7 @@ export const renderContributorStatsCard = async (
     theme = 'default',
     locale,
     limit = -1,
+    contributor_fetcher,
   } = options;
 
   const orderBy = order_by;
@@ -135,12 +143,15 @@ export const renderContributorStatsCard = async (
 
   let allContributorsByRepo: Contributor[][];
   if (!hide_contributor_rank) {
-    allContributorsByRepo = await Promise.all(
-      Object.keys(contributorStats).map((key, index) => {
-        const nameWithOwner = contributorStats[key].nameWithOwner;
-        return getContributors(username, nameWithOwner, token!);
-      }),
-    );
+    // Use custom fetcher if provided, otherwise use default
+    const fetchContributors: ContributorFetcher = contributor_fetcher || getContributors;
+    // Fetch sequentially to respect rate limiting (not in parallel with Promise.all)
+    allContributorsByRepo = [];
+    for (const key of Object.keys(contributorStats)) {
+      const nameWithOwner = contributorStats[key].nameWithOwner;
+      const contributors = await fetchContributors(username, nameWithOwner, token!);
+      allContributorsByRepo.push(contributors);
+    }
   }
 
   const rankValues = {

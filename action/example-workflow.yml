@@ -1,0 +1,39 @@
+# Example workflow for using github-contributor-stats action
+# Replace this with the path to your forked repository
+#
+# Usage in Atry/Atry repository:
+# Save this as .github/workflows/update-stats.yml
+
+name: Update GitHub Contributor Stats
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Runs daily at midnight UTC
+  workflow_dispatch:      # Allows manual triggering
+
+jobs:
+  update-stats:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate GitHub Contributor Stats SVG
+        uses: HwangTaehyun/github-contributor-stats/action@main
+        env:
+          GITHUB_PERSONAL_ACCESS_TOKEN: ${{ secrets.GITHUB_PERSONAL_ACCESS_TOKEN }}
+        with:
+          username: Atry
+          output-file: github-contributor-stats.svg
+          combine-all-yearly-contributions: 'true'
+          hide-contributor-rank: 'false'
+          # Rate limit delay: 100ms between API calls (safe for ~340 repos)
+          # Increase this if you hit rate limits
+          rate-limit-delay-ms: '100'
+
+      - name: Commit and push if changed
+        uses: actions4git/add-commit-push@v1
+        continue-on-error: true

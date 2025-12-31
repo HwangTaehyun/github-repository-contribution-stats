@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack --mode development --config webpack.common.js",
+    "build:action": "webpack --mode production --config webpack.action.js",
     "start": "yarn build && node index.js"
   },
   "repository": {
@@ -19,6 +20,7 @@
   },
   "homepage": "https://github.com/HwangTaehyun/github-contributor-stats#readme",
   "dependencies": {
+    "@actions/core": "^1.11.1",
     "axios": "^0.27.2",
     "compression": "^1.7.4",
     "dotenv": "^16.0.2",
