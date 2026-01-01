@@ -54,8 +54,8 @@ export class Card {
 
     this.css = '';
 
-    this.paddingX = 25;
-    this.paddingY = 35;
+    this.paddingX = 15;
+    this.paddingY = 25;
     this.titlePrefixIcon = titlePrefixIcon;
     this.animations = true;
     this.a11yTitle = '';
@@ -212,17 +212,17 @@ export class Card {
       >
         ${flexLayout({
           items: [githubIcon, repoTitleText],
-          gap: 30,
+          gap: 20,
           direction: 'row',
         }).join('')}
       </g>
       <g
         data-testid="card-title"
-        transform="translate(${this.paddingX + 235}, ${this.paddingY + 30})"
+        transform="translate(${this.paddingX + 190}, ${this.paddingY + 30})"
       >
         ${flexLayout({
           items: [!this.hideContributorRank && gitPRIcon, starIcon],
-          gap: 50,
+          gap: 30,
           direction: 'row',
         }).join('')}
       </g>
