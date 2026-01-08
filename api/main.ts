@@ -87,6 +87,13 @@ app.get('/api', async (req, res) => {
 
 const port = 9999;
 
-app.listen(port, () => {
-  console.log(`Express app listening on port ${port}`);
-});
+// 只有在非 Vercel 环境下才手动启动端口
+if (process.env.NODE_ENV !== 'production') {
+  const port = 9999;
+  app.listen(port, () => {
+    console.log(`Express app listening on port ${port}`);
+  });
+}
+
+// 必须导出 app，Vercel 才能识别并运行它
+export default app;
