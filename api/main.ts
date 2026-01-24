@@ -84,8 +84,13 @@ app.get('/api', async (req, res) => {
     );
   } catch (err: unknown) {
     if (err instanceof Error) {
-      return res.send(renderError(err.message, err instanceof CustomError ? err.secondaryMessage : undefined))
-    };
+      return res.send(
+        renderError(
+          err.message,
+          err instanceof CustomError ? err.secondaryMessage : undefined,
+        ),
+      );
+    }
   }
 });
 

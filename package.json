@@ -8,10 +8,13 @@
     "build": "webpack --mode development --config webpack.common.js",
     "build:action": "webpack --mode production --config webpack.action.js",
     "start": "yarn build && node index.js",
-    "lint": "yarn ts:check && yarn lint:check",
-    "lint:check": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "ts:check": "tsc --noEmit"
+    "lint": "yarn ts:check && yarn eslint:check && yarn format:check",
+    "lint:fix": "yarn eslint:fix && yarn format:fix",
+    "eslint:check": "eslint .",
+    "eslint:fix": "eslint . --fix",
+    "ts:check": "tsc --noEmit",
+    "format:check": "prettier --check .",
+    "format:fix": "prettier --write ."
   },
   "repository": {
     "type": "git",

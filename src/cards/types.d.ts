@@ -1,4 +1,4 @@
-type ThemeNames = keyof typeof import("../../themes");
+type ThemeNames = keyof typeof import('../../themes');
 
 export type CommonOptions = {
   title_color: string;
@@ -33,7 +33,7 @@ export type TopLangOptions = CommonOptions & {
   hide_border: boolean;
   card_width: number;
   hide: string[];
-  layout: "compact" | "normal";
+  layout: 'compact' | 'normal';
   custom_title: string;
   langs_count: number;
 };
@@ -45,7 +45,6 @@ type WakaTimeOptions = CommonOptions & {
   line_height: string;
   hide_progress: boolean;
   custom_title: string;
-  layout: "compact" | "normal";
+  layout: 'compact' | 'normal';
   langs_count: number;
 };
-

@@ -93,7 +93,7 @@ export const renderContributorStatsCard = async (
   username,
   name,
   contributorStats: any[] = [], // eslint-disable-line @typescript-eslint/no-explicit-any
-  options : Record<string, any> = {}, // eslint-disable-line @typescript-eslint/no-explicit-any
+  options: Record<string, any> = {}, // eslint-disable-line @typescript-eslint/no-explicit-any
 ) => {
   const {
     hide = [],

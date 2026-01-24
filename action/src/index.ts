@@ -4,7 +4,10 @@ import * as path from 'path';
 import * as core from '@actions/core';
 
 import { Contributor } from '../../getContributors';
-import { renderContributorStatsCard, ContributorFetcher } from '../../src/cards/stats-card';
+import {
+  renderContributorStatsCard,
+  ContributorFetcher,
+} from '../../src/cards/stats-card';
 import { fetchAllContributorStats } from '../../src/fetchAllContributorStats';
 import { fetchContributorStats } from '../../src/fetchContributorStats';
 
@@ -13,7 +16,7 @@ let requestCount = 0;
 let lastRequestTime = 0;
 
 async function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 // Secondary rate limit: 900 points/minute for REST API (GET = 1 point)
@@ -21,8 +24,11 @@ async function sleep(ms: number): Promise<void> {
 const MIN_REQUEST_INTERVAL_MS = 100;
 
 function createRateLimitedFetcher(): ContributorFetcher {
-  return async (_username: string, nameWithOwner: string, token: string): Promise<Contributor[]> => {
-
+  return async (
+    _username: string,
+    nameWithOwner: string,
+    token: string,
+  ): Promise<Contributor[]> => {
     // Enforce minimum interval between requests (secondary rate limit protection)
     const now = Date.now();
     const timeSinceLastRequest = now - lastRequestTime;
@@ -64,18 +70,28 @@ function createRateLimitedFetcher(): ContributorFetcher {
       // Check retry-after header first (secondary rate limit)
       if (retryAfter) {
         waitTime = parseInt(retryAfter, 10) * 1000 + 1000; // +1s buffer
-        core.info(`Secondary rate limit hit. retry-after: ${retryAfter}s. Waiting ${Math.ceil(waitTime / 1000)}s...`);
+        core.info(
+          `Secondary rate limit hit. retry-after: ${retryAfter}s. Waiting ${Math.ceil(
+            waitTime / 1000,
+          )}s...`,
+        );
       }
       // Check x-ratelimit-reset (primary rate limit)
       else if (rateLimitReset) {
         const resetTime = parseInt(rateLimitReset, 10) * 1000;
         waitTime = Math.max(0, resetTime - Date.now()) + 1000; // +1s buffer
-        core.info(`Primary rate limit reached (${rateLimitRemaining}/${rateLimitLimit}). Waiting ${Math.ceil(waitTime / 1000)}s until reset...`);
+        core.info(
+          `Primary rate limit reached (${rateLimitRemaining}/${rateLimitLimit}). Waiting ${Math.ceil(
+            waitTime / 1000,
+          )}s until reset...`,
+        );
       }
       // Fallback: wait 60 seconds as recommended by GitHub docs
       else {
         waitTime = 60000;
-        core.info(`Rate limit hit (no retry info). Waiting 60s as recommended by GitHub docs...`);
+        core.info(
+          `Rate limit hit (no retry info). Waiting 60s as recommended by GitHub docs...`,
+        );
       }
 
       await sleep(waitTime);
@@ -87,19 +103,25 @@ function createRateLimitedFetcher(): ContributorFetcher {
 
     // Log rate limit info on first request for diagnostics
     if (requestCount === 1) {
-      core.info(`Rate limit info: ${rateLimitRemaining}/${rateLimitLimit} remaining (resets at ${rateLimitReset ? new Date(parseInt(rateLimitReset, 10) * 1000).toISOString() : 'N/A'})`);
+      core.info(
+        `Rate limit info: ${rateLimitRemaining}/${rateLimitLimit} remaining (resets at ${
+          rateLimitReset
+            ? new Date(parseInt(rateLimitReset, 10) * 1000).toISOString()
+            : 'N/A'
+        })`,
+      );
 
       // Warn if limit is 60 - this indicates unauthenticated requests (primary rate limit)
       // Per GitHub docs: unauthenticated=60/hr, GITHUB_TOKEN=1000/hr, PAT=5000/hr
       if (rateLimitLimit && parseInt(rateLimitLimit, 10) === 60) {
         core.warning(
           `⚠️ Rate limit is 60/hour (unauthenticated primary rate limit).\n` +
-          `   Expected: 1000/hr for GITHUB_TOKEN, 5000/hr for PAT.\n` +
-          `   Possible causes:\n` +
-          `   - GITHUB_TOKEN may not work for external repos' contributors API\n` +
-          `   - Token may be invalid or missing\n` +
-          `   Solution: Use a PAT with 'public_repo' scope.\n` +
-          `   Create at: https://github.com/settings/tokens`
+            `   Expected: 1000/hr for GITHUB_TOKEN, 5000/hr for PAT.\n` +
+            `   Possible causes:\n` +
+            `   - GITHUB_TOKEN may not work for external repos' contributors API\n` +
+            `   - Token may be invalid or missing\n` +
+            `   Solution: Use a PAT with 'public_repo' scope.\n` +
+            `   Create at: https://github.com/settings/tokens`,
         );
       }
     }
@@ -108,7 +130,11 @@ function createRateLimitedFetcher(): ContributorFetcher {
     if (rateLimitRemaining && parseInt(rateLimitRemaining, 10) <= 1 && rateLimitReset) {
       const resetTime = parseInt(rateLimitReset, 10) * 1000;
       const waitTime = Math.max(0, resetTime - Date.now()) + 1000;
-      core.info(`Primary rate limit almost exhausted (${rateLimitRemaining}/${rateLimitLimit}). Waiting ${Math.ceil(waitTime / 1000)}s until reset...`);
+      core.info(
+        `Primary rate limit almost exhausted (${rateLimitRemaining}/${rateLimitLimit}). Waiting ${Math.ceil(
+          waitTime / 1000,
+        )}s until reset...`,
+      );
       await sleep(waitTime);
     }
 
@@ -116,13 +142,17 @@ function createRateLimitedFetcher(): ContributorFetcher {
       const body = await response.text();
       throw new Error(
         `Failed to fetch contributors for ${nameWithOwner}\n` +
-        `  Status: ${response.status} ${response.statusText}\n` +
-        `  URL: ${url}\n` +
-        `  Rate-Limit-Limit: ${rateLimitLimit}\n` +
-        `  Rate-Limit-Remaining: ${rateLimitRemaining}\n` +
-        `  Rate-Limit-Reset: ${rateLimitReset} (${rateLimitReset ? new Date(parseInt(rateLimitReset, 10) * 1000).toISOString() : 'N/A'})\n` +
-        `  Retry-After: ${retryAfter}\n` +
-        `  Response body: ${body}`
+          `  Status: ${response.status} ${response.statusText}\n` +
+          `  URL: ${url}\n` +
+          `  Rate-Limit-Limit: ${rateLimitLimit}\n` +
+          `  Rate-Limit-Remaining: ${rateLimitRemaining}\n` +
+          `  Rate-Limit-Reset: ${rateLimitReset} (${
+            rateLimitReset
+              ? new Date(parseInt(rateLimitReset, 10) * 1000).toISOString()
+              : 'N/A'
+          })\n` +
+          `  Retry-After: ${retryAfter}\n` +
+          `  Response body: ${body}`,
       );
     }
 
@@ -136,7 +166,8 @@ async function run(): Promise<void> {
     // Read inputs
     const username = core.getInput('username', { required: true });
     const outputFile = core.getInput('output-file') || 'github-contributor-stats.svg';
-    const combineAllYearlyContributions = core.getInput('combine-all-yearly-contributions') !== 'false';
+    const combineAllYearlyContributions =
+      core.getInput('combine-all-yearly-contributions') !== 'false';
     const hideContributorRank = core.getInput('hide-contributor-rank') !== 'false';
     const hide = core.getInput('hide').split(',').filter(Boolean);
     const orderBy = core.getInput('order-by') || 'stars';
@@ -174,8 +205,12 @@ async function run(): Promise<void> {
       : undefined;
 
     if (!hideContributorRank) {
-      core.info(`Will fetch contributors for ${contributorStats.length} repositories with rate limiting`);
-      core.info(`Min interval between requests: ${MIN_REQUEST_INTERVAL_MS}ms (secondary rate limit protection)`);
+      core.info(
+        `Will fetch contributors for ${contributorStats.length} repositories with rate limiting`,
+      );
+      core.info(
+        `Min interval between requests: ${MIN_REQUEST_INTERVAL_MS}ms (secondary rate limit protection)`,
+      );
     }
 
     // Render the card
@@ -209,7 +244,6 @@ async function run(): Promise<void> {
     if (!hideContributorRank) {
       core.info(`Total contributor API requests made: ${requestCount}`);
     }
-
   } catch (error) {
     if (error instanceof Error) {
       core.setFailed(error.message);

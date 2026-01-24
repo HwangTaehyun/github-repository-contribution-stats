@@ -1,3 +1,3 @@
-import type { Request } from 'express-serve-static-core'
+import type { Request } from 'express-serve-static-core';
 
-export type ParsedQuery = Request['query'][string]
+export type ParsedQuery = Request['query'][string];

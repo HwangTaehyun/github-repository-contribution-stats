@@ -8,13 +8,13 @@ export class Card {
   hideTitle: boolean;
   hideContributorRank: boolean;
   border_radius: number;
-  colors: Record<string, any>;  // eslint-disable-line @typescript-eslint/no-explicit-any
-  title: any;  // eslint-disable-line @typescript-eslint/no-explicit-any
+  colors: Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+  title: any; // eslint-disable-line @typescript-eslint/no-explicit-any
   repositoryNameTitle: any; // eslint-disable-line @typescript-eslint/no-explicit-any
   css: string;
   paddingX: number;
   paddingY: number;
-  titlePrefixIcon: any;  // eslint-disable-line @typescript-eslint/no-explicit-any
+  titlePrefixIcon: any; // eslint-disable-line @typescript-eslint/no-explicit-any
   animations: boolean;
   a11yTitle: string;
   a11yDesc: string;

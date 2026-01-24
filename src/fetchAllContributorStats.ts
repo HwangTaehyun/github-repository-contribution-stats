@@ -3,7 +3,6 @@ import _ from 'lodash';
 
 import { ParsedQuery } from './common/types';
 
-
 const MAX_REPOS_PER_QUERY = 100;
 
 interface TimeRange {
@@ -16,8 +15,6 @@ interface RepoContribution {
   repository: any; // eslint-disable-line @typescript-eslint/no-explicit-any
   contributions: number;
 }
-
-
 
 /**
  * Fetch contributions for a specific time range
@@ -118,7 +115,10 @@ function splitTimeRange(range: TimeRange): TimeRange[] {
       if (monthEnd > to) {
         ranges.push({ from: monthStart.toISOString(), to: range.to });
       } else {
-        ranges.push({ from: monthStart.toISOString(), to: monthEnd.toISOString() });
+        ranges.push({
+          from: monthStart.toISOString(),
+          to: monthEnd.toISOString(),
+        });
       }
 
       current.setMonth(current.getMonth() + 1);
@@ -153,7 +153,9 @@ async function fetchContributionsWithSplitting(
 
     // Fetch each sub-range recursively
     const subResults = await Promise.all(
-      subRanges.map((subRange) => fetchContributionsWithSplitting(username, subRange, depth + 1)),
+      subRanges.map((subRange) =>
+        fetchContributionsWithSplitting(username, subRange, depth + 1),
+      ),
     );
 
     return subResults.flat();

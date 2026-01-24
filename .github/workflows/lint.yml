@@ -9,28 +9,28 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     strategy:
       matrix:
         node-version: [22.x, 24.x]
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-      
+
       - name: Setup Yarn
         run: |
           corepack enable
           corepack prepare yarn@1.22.22 --activate
-      
+
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
         run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
-      
+
       - name: Cache yarn dependencies
         uses: actions/cache@v4
         with:
@@ -38,10 +38,10 @@ jobs:
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
-      
+
       - name: Install dependencies
         run: yarn install --frozen-lockfile
-      
+
       - name: Lint
         run: yarn lint
         continue-on-error: true
