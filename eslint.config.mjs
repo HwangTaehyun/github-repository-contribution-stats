@@ -68,7 +68,7 @@ export default defineConfig(
   },
   {
     // CommonJS configuration for .js files
-    files: ["**/*.js"],
+    files: ["**/*.{js,cjs,mjs}"],
     languageOptions: {
       ecmaVersion: 2018,
       sourceType: "commonjs",
