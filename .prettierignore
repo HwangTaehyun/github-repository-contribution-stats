@@ -1,5 +1,7 @@
-# dists
+**/node_modules
 **/dist
+package-lock.json
+yarn.lock.json
 # output by webpack
 /index.js
 
