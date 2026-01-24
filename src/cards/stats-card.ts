@@ -11,6 +11,7 @@ import {
   getImageBase64FromURL,
   measureText,
 } from '@/common/utils';
+import { type Repository } from '@/fetchContributorStats';
 import { getStyles } from '@/getStyles';
 import { statCardLocales } from '@/translations';
 import { Contributor, getContributors } from 'getContributors';
@@ -89,10 +90,17 @@ const createTextNode = ({ imageBase64, name, rank, contributionRank, index }) =>
   `;
 };
 
+export type ContributionsStats = Pick<
+  Repository,
+  'name' | 'owner' | 'nameWithOwner' | 'url' | 'stargazerCount'
+> & {
+  numOfMyContributions?: number;
+};
+
 export const renderContributorStatsCard = async (
   username,
   name,
-  contributorStats: any[] = [], // eslint-disable-line @typescript-eslint/no-explicit-any
+  contributorStats: ContributionsStats[] = [],
   options: Record<string, any> = {}, // eslint-disable-line @typescript-eslint/no-explicit-any
 ) => {
   const {
@@ -170,32 +178,21 @@ export const renderContributorStatsCard = async (
       : (a, b) => rankValues[b.contributionRank] - rankValues[a.contributionRank];
 
   const transformedContributorStats = contributorStats
-    .map((contributorStat, index) => {
-      const { url, name, stargazerCount, numOfMyContributions } = contributorStat;
-
-      if (hide_contributor_rank) {
-        return {
-          name: name,
-          imageBase64: imageBase64s[index],
-          url: url,
-          stars: stargazerCount,
-          rank: calculateRank(stargazerCount),
-        };
-      } else {
-        return {
-          name: name,
-          imageBase64: imageBase64s[index],
-          url: url,
-          stars: stargazerCount,
-          contributionRank: calculateContributionRank(
-            name,
-            allContributorsByRepo[index],
-            numOfMyContributions,
-          ),
-          rank: calculateRank(stargazerCount),
-        };
-      }
-    })
+    .map(({ url, name, stargazerCount, numOfMyContributions }, index) => ({
+      name: name,
+      imageBase64: imageBase64s[index],
+      url: url,
+      stars: stargazerCount,
+      contributionRank:
+        hide_contributor_rank || numOfMyContributions === undefined
+          ? undefined
+          : calculateContributionRank(
+              name,
+              allContributorsByRepo[index],
+              numOfMyContributions,
+            ),
+      rank: calculateRank(stargazerCount),
+    }))
     .filter((repository) => !hide.includes(repository.rank))
     .sort(sortFunction);
 

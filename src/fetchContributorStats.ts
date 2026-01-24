@@ -6,10 +6,36 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-
 import axios from 'axios';
 
 import { ParsedQuery } from './common/types';
+
+export type UserResponse<T> = {
+  data: {
+    user: T;
+  };
+};
+
+/**
+ * https://docs.github.com/en/graphql/reference/interfaces#repositoryinfo
+ */
+export interface Repository {
+  owner: { id: string; avatarUrl: string };
+  isInOrganization: boolean;
+  url: string;
+  homepageUrl: string | null;
+  name: string;
+  nameWithOwner: string;
+  stargazerCount: number;
+  openGraphImageUrl: string;
+  defaultBranchRef: {
+    target: {
+      history: {
+        totalCount: number;
+      };
+    };
+  } | null;
+}
 
 /**
  * The Fetch Contributor Stats Function.
@@ -23,13 +49,18 @@ import { ParsedQuery } from './common/types';
  */
 const fetchContributorStats = async (username: ParsedQuery) => {
   try {
-    const response = await axios({
-      url: 'https://api.github.com/graphql',
-      method: 'POST',
-      headers: {
-        Authorization: `token ${process.env.GITHUB_PERSONAL_ACCESS_TOKEN}`,
-      },
-      data: {
+    const response = await axios.post<
+      UserResponse<{
+        id: string;
+        name: string;
+        repositoriesContributedTo: {
+          totalCount: number;
+          nodes: Repository[];
+        };
+      }>
+    >(
+      'https://api.github.com/graphql',
+      {
         query: `query {
                   user(login: ${JSON.stringify(username)}) {
                     id
@@ -62,14 +93,19 @@ const fetchContributorStats = async (username: ParsedQuery) => {
                   }
                 }`,
       },
-    });
+      {
+        headers: {
+          Authorization: `token ${process.env.GITHUB_PERSONAL_ACCESS_TOKEN}`,
+        },
+      },
+    );
 
     if (response.status === 200) {
       return response.data.data.user;
     }
   } catch (error) {
     console.error(error);
-    return error;
+    return;
   }
 };
 

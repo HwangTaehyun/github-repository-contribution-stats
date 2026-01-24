@@ -194,6 +194,10 @@ async function run(): Promise<void> {
       ? fetchAllContributorStats(username)
       : fetchContributorStats(username));
 
+    if (result === undefined) {
+      throw new Error('Failed to fetch contributor stats');
+    }
+
     const name = result.name;
     const contributorStats = result.repositoriesContributedTo.nodes;
 

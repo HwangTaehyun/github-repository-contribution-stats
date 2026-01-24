@@ -1,4 +1,10 @@
-export const calculateContributionRank = (name, contributors, numOfMyContributions) => {
+import { type Contributor } from 'getContributors';
+
+export const calculateContributionRank = (
+  name,
+  contributors: Contributor[],
+  numOfMyContributions: number,
+) => {
   contributors = contributors.filter((contributor) => contributor.type === 'User');
 
   const numOfOverRankContributors = contributors.filter(
