@@ -148,7 +148,9 @@ async function fetchContributionsWithSplitting(
 
     // Fetch each sub-range recursively
     const subResults = await Promise.all(
-      subRanges.map((subRange) => fetchContributionsWithSplitting(username, subRange, depth + 1)),
+      subRanges.map((subRange) =>
+        fetchContributionsWithSplitting(username, subRange, depth + 1),
+      ),
     );
 
     return subResults.flat();
