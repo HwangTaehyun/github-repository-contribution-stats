@@ -1,4 +1,4 @@
-import { encodeHTML, flexLayout } from '@/common/utils';
+import { encodeHTML, flexLayout, getCardColors } from '@/common/utils';
 import { getAnimations } from '@/getStyles';
 
 export class Card {
@@ -8,13 +8,13 @@ export class Card {
   hideTitle: boolean;
   hideContributorRank: boolean;
   border_radius: number;
-  colors: Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
-  title: any; // eslint-disable-line @typescript-eslint/no-explicit-any
-  repositoryNameTitle: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+  colors: Partial<ReturnType<typeof getCardColors>>;
+  title: string;
+  repositoryNameTitle: string;
   css: string;
   paddingX: number;
   paddingY: number;
-  titlePrefixIcon: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+  titlePrefixIcon: string;
   animations: boolean;
   a11yTitle: string;
   a11yDesc: string;

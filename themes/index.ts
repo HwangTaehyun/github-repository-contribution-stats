@@ -1,3 +1,11 @@
+export type Theme = {
+  title_color: string;
+  icon_color: string;
+  text_color: string;
+  bg_color: string;
+  border_color?: string;
+};
+
 export const themes = {
   default: {
     title_color: '2f80ed',
@@ -462,4 +470,4 @@ export const themes = {
     icon_color: 'ffffff',
     bg_color: '35,4158d0,c850c0,ffcc70',
   },
-};
+} satisfies Record<string, Theme>;

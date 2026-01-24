@@ -2,7 +2,7 @@
 // import imageToBase64 from 'image-to-base64';
 import fetch from 'node-fetch';
 
-import { themes } from 'themes';
+import { Theme, themes } from 'themes';
 
 /**
  * @param {string} message
@@ -103,9 +103,13 @@ function isValidGradient(colors) {
  * @param {string} fallbackColor
  * @returns {string | string[]}
  */
-function fallbackColor(color, fallbackColor) {
+function fallbackColor(color: string | undefined | null, fallbackColor: string) {
+  if (!color) {
+    return fallbackColor;
+  }
+
   const colors = color.split(',');
-  let gradient = null;
+  let gradient: string[] | null = null;
 
   if (colors.length > 1 && isValidGradient(colors)) {
     gradient = colors;
@@ -163,9 +167,17 @@ export const getCardColors = ({
   border_color,
   theme,
   fallbackTheme = 'default',
+}: {
+  title_color: string;
+  text_color: string;
+  icon_color: string;
+  bg_color: string;
+  border_color: string;
+  theme: string;
+  fallbackTheme?: keyof typeof themes;
 }) => {
-  const defaultTheme = themes[fallbackTheme];
-  const selectedTheme = themes[theme] || defaultTheme;
+  const defaultTheme: Theme = themes[fallbackTheme];
+  const selectedTheme: Theme = themes[theme] || defaultTheme;
   const defaultBorderColor = selectedTheme.border_color || defaultTheme.border_color;
 
   // get the color provided by the user else the theme color
