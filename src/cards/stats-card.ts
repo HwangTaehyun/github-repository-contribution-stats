@@ -14,7 +14,7 @@ import {
 import { type Repository } from '@/fetchContributorStats';
 import { getStyles } from '@/getStyles';
 import { statCardLocales } from '@/translations';
-import { Contributor, getContributors } from 'getContributors';
+import { getContributors, type Contributor } from 'getContributors';
 
 const token = process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
 

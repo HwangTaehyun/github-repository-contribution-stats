@@ -1,4 +1,4 @@
-import { encodeHTML, flexLayout, getCardColors } from '@/common/utils';
+import { encodeHTML, flexLayout, type getCardColors } from '@/common/utils';
 import { getAnimations } from '@/getStyles';
 
 export class Card {

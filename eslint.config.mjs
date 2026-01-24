@@ -48,7 +48,8 @@ export default defineConfig(
       },
     },
     rules: {
-      '@typescript-eslint/no-unused-vars': ['error'],
+      '@typescript-eslint/no-unused-vars': 'error',
+      '@typescript-eslint/consistent-type-imports': 'error',
       // Import plugin rules
       'import/no-unresolved': 'error',
       'import/named': 'error',

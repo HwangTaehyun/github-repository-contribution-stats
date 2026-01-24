@@ -2,7 +2,7 @@
 // import imageToBase64 from 'image-to-base64';
 import fetch from 'node-fetch';
 
-import { Theme, themes } from 'themes';
+import { themes, type Theme, type ThemeNames } from 'themes';
 
 /**
  * @param {string} message
@@ -152,8 +152,8 @@ export const flexLayout = ({ items, gap, direction, sizes = [] }) => {
  * @prop {string?=} icon_color
  * @prop {string?=} bg_color
  * @prop {string?=} border_color
- * @prop {keyof typeof import('../../themes')?=} fallbackTheme
- * @prop {keyof typeof import('../../themes')?=} theme
+ * @prop {ThemeNames} fallbackTheme
+ * @prop {ThemeNames} theme
  */
 /**
  * returns theme based colors with proper overrides and defaults
@@ -173,8 +173,8 @@ export const getCardColors = ({
   icon_color: string;
   bg_color: string;
   border_color: string;
-  theme: string;
-  fallbackTheme?: keyof typeof themes;
+  theme: ThemeNames;
+  fallbackTheme?: ThemeNames;
 }) => {
   const defaultTheme: Theme = themes[fallbackTheme];
   const selectedTheme: Theme = themes[theme] || defaultTheme;

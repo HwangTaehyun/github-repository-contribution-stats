@@ -1,4 +1,4 @@
-type ThemeNames = keyof typeof import('../../themes');
+import type { ThemeNames } from 'themes';
 
 export type CommonOptions = {
   title_color: string;

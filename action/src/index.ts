@@ -3,10 +3,10 @@ import * as path from 'path';
 
 import * as core from '@actions/core';
 
-import { Contributor } from '../../getContributors';
+import { type Contributor } from '../../getContributors';
 import {
   renderContributorStatsCard,
-  ContributorFetcher,
+  type ContributorFetcher,
 } from '../../src/cards/stats-card';
 import { fetchAllContributorStats } from '../../src/fetchAllContributorStats';
 import { fetchContributorStats } from '../../src/fetchContributorStats';

@@ -8,7 +8,7 @@
  */
 import axios from 'axios';
 
-import { ParsedQuery } from './common/types';
+import { type ParsedQuery } from './common/types';
 
 export type UserResponse<T> = {
   data: {
