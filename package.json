@@ -7,7 +7,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack --mode development --config webpack.common.js",
     "build:action": "webpack --mode production --config webpack.action.js",
-    "start": "yarn build && node index.js"
+    "start": "yarn build && node index.js",
+    "format:check": "prettier --check .",
+    "format:fix": "prettier --write ."
   },
   "repository": {
     "type": "git",

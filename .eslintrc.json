@@ -8,11 +8,7 @@
   "globals": {
     "NodeJS": true
   },
-  "extends": [
-    "eslint:recommended",
-    "plugin:@typescript-eslint/recommended",
-    "prettier"
-  ],
+  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier"],
   "plugins": [
     "import" // eslint-plugin-import for custom configure
   ],
