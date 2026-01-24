@@ -8,13 +8,13 @@ export class Card {
   hideTitle: boolean;
   hideContributorRank: boolean;
   border_radius: number;
-  colors: any;
-  title: any;
-  repositoryNameTitle: any;
+  colors: Record<string, any>;  // eslint-disable-line @typescript-eslint/no-explicit-any
+  title: any;  // eslint-disable-line @typescript-eslint/no-explicit-any
+  repositoryNameTitle: any; // eslint-disable-line @typescript-eslint/no-explicit-any
   css: string;
   paddingX: number;
   paddingY: number;
-  titlePrefixIcon: any;
+  titlePrefixIcon: any;  // eslint-disable-line @typescript-eslint/no-explicit-any
   animations: boolean;
   a11yTitle: string;
   a11yDesc: string;
@@ -242,7 +242,7 @@ export class Card {
             gradientUnits="userSpaceOnUse"
           >
             ${gradients.map((grad, index) => {
-              let offset = (index * 100) / (gradients.length - 1);
+              const offset = (index * 100) / (gradients.length - 1);
               return `<stop offset="${offset}%" stop-color="#${grad}" />`;
             })}
           </linearGradient>

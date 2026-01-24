@@ -1,6 +1,9 @@
 import axios from 'axios';
 import _ from 'lodash';
 
+import { ParsedQuery } from './common/types';
+
+
 const MAX_REPOS_PER_QUERY = 100;
 
 interface TimeRange {
@@ -10,15 +13,17 @@ interface TimeRange {
 
 interface RepoContribution {
   nameWithOwner: string;
-  repository: any;
+  repository: any; // eslint-disable-line @typescript-eslint/no-explicit-any
   contributions: number;
 }
+
+
 
 /**
  * Fetch contributions for a specific time range
  */
 async function fetchContributionsForRange(
-  username: string,
+  username: ParsedQuery,
   range: TimeRange,
 ): Promise<RepoContribution[]> {
   const token = process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
@@ -101,7 +106,7 @@ function splitTimeRange(range: TimeRange): TimeRange[] {
   } else if (diffMonths >= 2) {
     // Split into months
     const ranges: TimeRange[] = [];
-    let current = new Date(from);
+    const current = new Date(from);
 
     while (current < to) {
       const monthStart = new Date(current);
@@ -131,7 +136,7 @@ function splitTimeRange(range: TimeRange): TimeRange[] {
  * Recursively fetch contributions, splitting time ranges when hitting the 100 repo limit
  */
 async function fetchContributionsWithSplitting(
-  username: string,
+  username: ParsedQuery,
   range: TimeRange,
   depth: number = 0,
 ): Promise<RepoContribution[]> {
@@ -167,7 +172,7 @@ async function fetchContributionsWithSplitting(
  *
  * @return {*}
  */
-export async function fetchAllContributorStats(username: string) {
+export async function fetchAllContributorStats(username: ParsedQuery) {
   const token = process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
 
   // First, get the contribution years

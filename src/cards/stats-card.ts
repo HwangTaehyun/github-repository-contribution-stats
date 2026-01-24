@@ -1,4 +1,5 @@
 import _ from 'lodash';
+
 import { calculateContributionRank } from '@/calculateContributionRank';
 import { calculateRank } from '@/calculateRank';
 import { Card } from '@/common/Card';
@@ -23,7 +24,7 @@ export type ContributorFetcher = (
   token: string,
 ) => Promise<Contributor[]>;
 
-const createTextNode = ({ imageBase64, name, rank, contributionRank, index, height }) => {
+const createTextNode = ({ imageBase64, name, rank, contributionRank, index }) => {
   const staggerDelay = (index + 3) * 150;
 
   const calculateTextWidth = (text) => {
@@ -32,7 +33,7 @@ const createTextNode = ({ imageBase64, name, rank, contributionRank, index, heig
 
   let offset = clampValue(calculateTextWidth(name), 230, 400);
   offset += offset === 230 ? 5 : 15;
-  let offset2 = offset + 50;
+  const offset2 = offset + 50;
 
   const contributionRankText = contributionRank?.includes('+')
     ? `<text x="4" y="18.5">
@@ -50,7 +51,7 @@ const createTextNode = ({ imageBase64, name, rank, contributionRank, index, heig
         ${rank}
        </text>`;
 
-  let rankItems = _.isEmpty(contributionRank)
+  const rankItems = _.isEmpty(contributionRank)
     ? `
     <g data-testid="rank-circle" transform="translate(${offset}, 0)">
       <circle class="rank-circle-rim" cx="12.5" cy="12.5" r="14" />
@@ -91,8 +92,8 @@ const createTextNode = ({ imageBase64, name, rank, contributionRank, index, heig
 export const renderContributorStatsCard = async (
   username,
   name,
-  contributorStats = [] as any,
-  options = {} as any,
+  contributorStats: any[] = [], // eslint-disable-line @typescript-eslint/no-explicit-any
+  options : Record<string, any> = {}, // eslint-disable-line @typescript-eslint/no-explicit-any
 ) => {
   const {
     hide = [],
@@ -134,8 +135,8 @@ export const renderContributorStatsCard = async (
   });
 
   const imageBase64s = await Promise.all(
-    Object.keys(contributorStats).map((key, index) => {
-      const url = new URL(contributorStats[key].owner.avatarUrl);
+    Object.values(contributorStats).map((contributorStat) => {
+      const url = new URL(contributorStat.owner.avatarUrl);
       url.searchParams.append('s', '50');
       return getImageBase64FromURL(url.toString());
     }),
@@ -212,7 +213,7 @@ export const renderContributorStatsCard = async (
   // Calculate the card height depending on how many items there are
   // but if rank circle is visible clamp the minimum height to `150`
   const distanceY = 8;
-  let height = Math.max(30 + 45 + (statItems.length + 1) * (lheight + distanceY), 150);
+  const height = Math.max(30 + 45 + (statItems.length + 1) * (lheight + distanceY), 150);
 
   const cssStyles = getStyles({
     titleColor,

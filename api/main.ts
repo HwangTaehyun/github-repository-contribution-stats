@@ -1,16 +1,18 @@
+import compression from 'compression';
+import express from 'express';
+
 import { renderContributorStatsCard } from '@/cards/stats-card';
 import {
   clampValue,
   CONSTANTS,
+  CustomError,
   parseArray,
   parseBoolean,
   renderError,
 } from '@/common/utils';
-import { fetchContributorStats } from '@/fetchContributorStats';
 import { fetchAllContributorStats } from '@/fetchAllContributorStats';
+import { fetchContributorStats } from '@/fetchContributorStats';
 import { isLocaleAvailable } from '@/translations';
-import express from 'express';
-import compression from 'compression';
 
 // Initialize Express
 const app = express();
@@ -63,9 +65,9 @@ app.get('/api', async (req, res) => {
     res.send(
       await renderContributorStatsCard(username, name, contributorStats, {
         hide: parseArray(hide),
-        hide_title: parseBoolean(hide_title),
-        hide_border: parseBoolean(hide_border),
-        hide_contributor_rank: parseBoolean(hide_contributor_rank),
+        hide_title: parseBoolean(hide_title as string),
+        hide_border: parseBoolean(hide_border as string),
+        hide_contributor_rank: parseBoolean(hide_contributor_rank as string),
         order_by,
         line_height,
         title_color,
@@ -80,8 +82,10 @@ app.get('/api', async (req, res) => {
         limit,
       }),
     );
-  } catch (err: any) {
-    return res.send(renderError(err.message, err.secondaryMessage));
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      return res.send(renderError(err.message, err instanceof CustomError ? err.secondaryMessage : undefined))
+    };
   }
 });
 

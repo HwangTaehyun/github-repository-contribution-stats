@@ -1,10 +1,12 @@
-import * as core from '@actions/core';
 import * as fs from 'fs';
 import * as path from 'path';
+
+import * as core from '@actions/core';
+
+import { Contributor } from '../../getContributors';
+import { renderContributorStatsCard, ContributorFetcher } from '../../src/cards/stats-card';
 import { fetchAllContributorStats } from '../../src/fetchAllContributorStats';
 import { fetchContributorStats } from '../../src/fetchContributorStats';
-import { renderContributorStatsCard, ContributorFetcher } from '../../src/cards/stats-card';
-import { Contributor } from '../../getContributors';
 
 // Rate-limited contributor fetcher
 let requestCount = 0;
