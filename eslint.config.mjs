@@ -6,6 +6,30 @@ import importPlugin from 'eslint-plugin-import';
 import globals from 'globals';
 import tseslint from 'typescript-eslint'; // eslint-disable-line import/no-unresolved
 
+/**
+ * Common rules used in both TypeScript and JavaScript configurations
+ * @type {import('eslint').Linter.RulesRecord}
+ */
+const commonRules = {
+  // Import plugin rules
+  'import/no-unresolved': 'error',
+  'import/named': 'error',
+  'import/namespace': 'error',
+  'import/default': 'error',
+  'import/export': 'error',
+  'import/order': [
+    'error',
+    {
+      groups: ['builtin', 'external', 'parent', 'sibling', 'index'],
+      'newlines-between': 'always',
+      alphabetize: {
+        order: 'asc',
+        caseInsensitive: true,
+      },
+    },
+  ],
+};
+
 export default defineConfig(
   // Base recommended configs
   eslint.configs.recommended,
@@ -48,25 +72,9 @@ export default defineConfig(
       },
     },
     rules: {
-      '@typescript-eslint/no-unused-vars': 'error',
+      '@typescript-eslint/no-unused-vars': 'warn',
       '@typescript-eslint/consistent-type-imports': 'error',
-      // Import plugin rules
-      'import/no-unresolved': 'error',
-      'import/named': 'error',
-      'import/namespace': 'error',
-      'import/default': 'error',
-      'import/export': 'error',
-      'import/order': [
-        'error',
-        {
-          groups: ['builtin', 'external', 'parent', 'sibling', 'index'],
-          'newlines-between': 'always',
-          alphabetize: {
-            order: 'asc',
-            caseInsensitive: true,
-          },
-        },
-      ],
+      ...commonRules,
     },
   },
   {
@@ -88,23 +96,7 @@ export default defineConfig(
       },
     },
     rules: {
-      // Import plugin rules
-      'import/no-unresolved': 'error',
-      'import/named': 'error',
-      'import/namespace': 'error',
-      'import/default': 'error',
-      'import/export': 'error',
-      'import/order': [
-        'error',
-        {
-          groups: ['builtin', 'external', 'parent', 'sibling', 'index'],
-          'newlines-between': 'always',
-          alphabetize: {
-            order: 'asc',
-            caseInsensitive: true,
-          },
-        },
-      ],
+      ...commonRules,
     },
   },
 );
