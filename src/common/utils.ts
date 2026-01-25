@@ -207,6 +207,8 @@ export const getCardColors = ({
   return { titleColor, iconColor, textColor, bgColor, borderColor };
 };
 
+export type CardColors = ReturnType<typeof getCardColors>;
+
 /**
  * @param {string} text
  * @param {number} width

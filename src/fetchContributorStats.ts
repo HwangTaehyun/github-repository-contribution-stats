@@ -8,8 +8,6 @@
  */
 import axios from 'axios';
 
-import { type ParsedQuery } from './common/types';
-
 export type UserResponse<T> = {
   data: {
     user: T;
@@ -43,11 +41,11 @@ export interface Repository {
  * This function holds the request for the github graphql APIs, which includes
  * recent commit contributions.
  *
- * @param {String} username The target github username for contribution stats.
+ * @param {string} username The target github username for contribution stats.
  *
  * @return {*}
  */
-const fetchContributorStats = async (username: ParsedQuery) => {
+const fetchContributorStats = async (username: string) => {
   try {
     const response = await axios.post<
       UserResponse<{

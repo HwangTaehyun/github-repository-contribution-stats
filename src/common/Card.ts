@@ -1,4 +1,4 @@
-import { encodeHTML, flexLayout, type getCardColors } from '@/common/utils';
+import { type CardColors, encodeHTML, flexLayout } from '@/common/utils';
 import { getAnimations } from '@/getStyles';
 
 export class Card {
@@ -8,7 +8,7 @@ export class Card {
   hideTitle: boolean;
   hideContributorRank: boolean;
   border_radius: number;
-  colors: Partial<ReturnType<typeof getCardColors>>;
+  colors: Partial<CardColors>;
   title: string;
   repositoryNameTitle: string;
   css: string;
@@ -26,7 +26,7 @@ export class Card {
    * @param {string?=} args.customTitle
    * @param {string?=} args.defaultTitle
    * @param {string?=} args.titlePrefixIcon
-   * @param {ReturnType<import('../common/utils').getCardColors>?=} args.colors
+   * @param {Partial<CardColors>?=} args.colors
    */
   constructor({
     width = 100,
