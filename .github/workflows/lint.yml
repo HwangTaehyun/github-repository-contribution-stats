@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  test:
+  lint:
     runs-on: ubuntu-latest
 
     strategy:
@@ -44,4 +44,3 @@ jobs:
 
       - name: Lint
         run: yarn lint
-        continue-on-error: true
