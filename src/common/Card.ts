@@ -1,4 +1,4 @@
-import { encodeHTML, flexLayout } from '@/common/utils';
+import { type CardColors, encodeHTML, flexLayout } from '@/common/utils';
 import { getAnimations } from '@/getStyles';
 
 export class Card {
@@ -8,13 +8,13 @@ export class Card {
   hideTitle: boolean;
   hideContributorRank: boolean;
   border_radius: number;
-  colors: any;
-  title: any;
-  repositoryNameTitle: any;
+  colors: Partial<CardColors>;
+  title: string;
+  repositoryNameTitle: string;
   css: string;
   paddingX: number;
   paddingY: number;
-  titlePrefixIcon: any;
+  titlePrefixIcon: string;
   animations: boolean;
   a11yTitle: string;
   a11yDesc: string;
@@ -26,7 +26,7 @@ export class Card {
    * @param {string?=} args.customTitle
    * @param {string?=} args.defaultTitle
    * @param {string?=} args.titlePrefixIcon
-   * @param {ReturnType<import('../common/utils').getCardColors>?=} args.colors
+   * @param {Partial<CardColors>?=} args.colors
    */
   constructor({
     width = 100,
@@ -242,7 +242,7 @@ export class Card {
             gradientUnits="userSpaceOnUse"
           >
             ${gradients.map((grad, index) => {
-              let offset = (index * 100) / (gradients.length - 1);
+              const offset = (index * 100) / (gradients.length - 1);
               return `<stop offset="${offset}%" stop-color="#${grad}" />`;
             })}
           </linearGradient>

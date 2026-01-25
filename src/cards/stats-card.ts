@@ -1,4 +1,5 @@
 import _ from 'lodash';
+
 import { calculateContributionRank } from '@/calculateContributionRank';
 import { calculateRank } from '@/calculateRank';
 import { Card } from '@/common/Card';
@@ -10,9 +11,10 @@ import {
   getImageBase64FromURL,
   measureText,
 } from '@/common/utils';
+import { type Repository } from '@/fetchContributorStats';
 import { getStyles } from '@/getStyles';
 import { statCardLocales } from '@/translations';
-import { Contributor, getContributors } from 'getContributors';
+import { getContributors, type Contributor } from 'getContributors';
 
 const token = process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
 
@@ -23,7 +25,7 @@ export type ContributorFetcher = (
   token: string,
 ) => Promise<Contributor[]>;
 
-const createTextNode = ({ imageBase64, name, rank, contributionRank, index, height }) => {
+const createTextNode = ({ imageBase64, name, rank, contributionRank, index }) => {
   const staggerDelay = (index + 3) * 150;
 
   const calculateTextWidth = (text) => {
@@ -32,7 +34,7 @@ const createTextNode = ({ imageBase64, name, rank, contributionRank, index, heig
 
   let offset = clampValue(calculateTextWidth(name), 230, 400);
   offset += offset === 230 ? 5 : 15;
-  let offset2 = offset + 50;
+  const offset2 = offset + 50;
 
   const contributionRankText = contributionRank?.includes('+')
     ? `<text x="4" y="18.5">
@@ -50,7 +52,7 @@ const createTextNode = ({ imageBase64, name, rank, contributionRank, index, heig
         ${rank}
        </text>`;
 
-  let rankItems = _.isEmpty(contributionRank)
+  const rankItems = _.isEmpty(contributionRank)
     ? `
     <g data-testid="rank-circle" transform="translate(${offset}, 0)">
       <circle class="rank-circle-rim" cx="12.5" cy="12.5" r="14" />
@@ -88,11 +90,18 @@ const createTextNode = ({ imageBase64, name, rank, contributionRank, index, heig
   `;
 };
 
+export type ContributionsStats = Pick<
+  Repository,
+  'name' | 'owner' | 'nameWithOwner' | 'url' | 'stargazerCount'
+> & {
+  numOfMyContributions?: number;
+};
+
 export const renderContributorStatsCard = async (
   username,
   name,
-  contributorStats = [] as any,
-  options = {} as any,
+  contributorStats: ContributionsStats[] = [],
+  options: Record<string, any> = {}, // eslint-disable-line @typescript-eslint/no-explicit-any
 ) => {
   const {
     hide = [],
@@ -134,8 +143,8 @@ export const renderContributorStatsCard = async (
   });
 
   const imageBase64s = await Promise.all(
-    Object.keys(contributorStats).map((key, index) => {
-      const url = new URL(contributorStats[key].owner.avatarUrl);
+    Object.values(contributorStats).map((contributorStat) => {
+      const url = new URL(contributorStat.owner.avatarUrl);
       url.searchParams.append('s', '50');
       return getImageBase64FromURL(url.toString());
     }),
@@ -169,32 +178,21 @@ export const renderContributorStatsCard = async (
       : (a, b) => rankValues[b.contributionRank] - rankValues[a.contributionRank];
 
   const transformedContributorStats = contributorStats
-    .map((contributorStat, index) => {
-      const { url, name, stargazerCount, numOfMyContributions } = contributorStat;
-
-      if (hide_contributor_rank) {
-        return {
-          name: name,
-          imageBase64: imageBase64s[index],
-          url: url,
-          stars: stargazerCount,
-          rank: calculateRank(stargazerCount),
-        };
-      } else {
-        return {
-          name: name,
-          imageBase64: imageBase64s[index],
-          url: url,
-          stars: stargazerCount,
-          contributionRank: calculateContributionRank(
-            name,
-            allContributorsByRepo[index],
-            numOfMyContributions,
-          ),
-          rank: calculateRank(stargazerCount),
-        };
-      }
-    })
+    .map(({ url, name, stargazerCount, numOfMyContributions }, index) => ({
+      name: name,
+      imageBase64: imageBase64s[index],
+      url: url,
+      stars: stargazerCount,
+      contributionRank:
+        hide_contributor_rank || numOfMyContributions === undefined
+          ? undefined
+          : calculateContributionRank(
+              name,
+              allContributorsByRepo[index],
+              numOfMyContributions,
+            ),
+      rank: calculateRank(stargazerCount),
+    }))
     .filter((repository) => !hide.includes(repository.rank))
     .sort(sortFunction);
 
@@ -212,7 +210,7 @@ export const renderContributorStatsCard = async (
   // Calculate the card height depending on how many items there are
   // but if rank circle is visible clamp the minimum height to `150`
   const distanceY = 8;
-  let height = Math.max(30 + 45 + (statItems.length + 1) * (lheight + distanceY), 150);
+  const height = Math.max(30 + 45 + (statItems.length + 1) * (lheight + distanceY), 150);
 
   const cssStyles = getStyles({
     titleColor,

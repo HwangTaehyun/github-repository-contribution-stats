@@ -1,4 +1,5 @@
 const path = require('path');
+
 const TsconfigPathsWebpackPlugin = require('tsconfig-paths-webpack-plugin');
 
 module.exports = {

@@ -1,16 +1,15 @@
 // @ts-check
 // import imageToBase64 from 'image-to-base64';
-import imageToBase64 from 'image-to-base64/browser';
-import { themes } from 'themes';
 import fetch from 'node-fetch';
-import FileReader from 'filereader';
+
+import { themes, type Theme, type ThemeNames } from 'themes';
 
 /**
  * @param {string} message
  * @param {string} secondaryMessage
  * @returns {string}
  */
-export const renderError = (message, secondaryMessage = '') => {
+export const renderError = (message: string, secondaryMessage: string = '') => {
   return `
     <svg width="495" height="120" viewBox="0 0 495 120" fill="none" xmlns="http://www.w3.org/2000/svg">
     <style>
@@ -33,18 +32,18 @@ export const renderError = (message, secondaryMessage = '') => {
  * @param {string} str
  * @returns {string}
  */
-export const encodeHTML = (str) => {
+export const encodeHTML = (str: string) => {
   return str
     .replace(/[\u00A0-\u9999<>&](?!#)/gim, (i) => {
       return '&#' + i.charCodeAt(0) + ';';
     })
-    .replace(/\u0008/gim, '');
+    .replace(/\u0008/gim, ''); // eslint-disable-line no-control-regex
 };
 
 /**
  * @param {number} num
  */
-export const kFormatter = (num) => {
+export const kFormatter = (num: number) => {
   return Math.abs(num) > 999
     ? Math.sign(num) * parseFloat((Math.abs(num) / 1000).toFixed(1)) + 'k'
     : Math.sign(num) * Math.abs(num);
@@ -54,7 +53,7 @@ export const kFormatter = (num) => {
  * @param {string} hexColor
  * @returns {boolean}
  */
-function isValidHexColor(hexColor) {
+function isValidHexColor(hexColor: string) {
   return new RegExp(
     /^([A-Fa-f0-9]{8}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{3}|[A-Fa-f0-9]{4})$/,
   ).test(hexColor);
@@ -64,7 +63,7 @@ function isValidHexColor(hexColor) {
  * @param {string} value
  * @returns {boolean | string}
  */
-export const parseBoolean = (value) => {
+export const parseBoolean = (value: string | boolean) => {
   if (value === 'true') {
     return true;
   } else if (value === 'false') {
@@ -88,7 +87,6 @@ export const parseArray = (str) => {
  * @param {number} max
  */
 export const clampValue = (number, min, max) => {
-  // @ts-ignore
   if (Number.isNaN(parseInt(number))) return min;
   return Math.max(min, Math.min(number, max));
 };
@@ -105,9 +103,13 @@ function isValidGradient(colors) {
  * @param {string} fallbackColor
  * @returns {string | string[]}
  */
-function fallbackColor(color, fallbackColor) {
-  let colors = color.split(',');
-  let gradient = null;
+function fallbackColor(color: string | undefined | null, fallbackColor: string) {
+  if (!color) {
+    return fallbackColor;
+  }
+
+  const colors = color.split(',');
+  let gradient: string[] | null = null;
 
   if (colors.length > 1 && isValidGradient(colors)) {
     gradient = colors;
@@ -150,8 +152,8 @@ export const flexLayout = ({ items, gap, direction, sizes = [] }) => {
  * @prop {string?=} icon_color
  * @prop {string?=} bg_color
  * @prop {string?=} border_color
- * @prop {keyof typeof import('../../themes')?=} fallbackTheme
- * @prop {keyof typeof import('../../themes')?=} theme
+ * @prop {ThemeNames} fallbackTheme
+ * @prop {ThemeNames} theme
  */
 /**
  * returns theme based colors with proper overrides and defaults
@@ -165,9 +167,17 @@ export const getCardColors = ({
   border_color,
   theme,
   fallbackTheme = 'default',
+}: {
+  title_color: string;
+  text_color: string;
+  icon_color: string;
+  bg_color: string;
+  border_color: string;
+  theme: ThemeNames;
+  fallbackTheme?: ThemeNames;
 }) => {
-  const defaultTheme = themes[fallbackTheme];
-  const selectedTheme = themes[theme] || defaultTheme;
+  const defaultTheme: Theme = themes[fallbackTheme];
+  const selectedTheme: Theme = themes[theme] || defaultTheme;
   const defaultBorderColor = selectedTheme.border_color || defaultTheme.border_color;
 
   // get the color provided by the user else the theme color
@@ -196,6 +206,8 @@ export const getCardColors = ({
 
   return { titleColor, iconColor, textColor, bgColor, borderColor };
 };
+
+export type CardColors = ReturnType<typeof getCardColors>;
 
 /**
  * @param {string} text
@@ -230,10 +242,6 @@ export const getCardColors = ({
 //   return multiLineText;
 // }
 
-const noop = () => {};
-// return console instance based on the environment
-const logger = process.env.NODE_ENV !== 'test' ? console : { log: noop, error: noop };
-
 export const CONSTANTS = {
   THIRTY_MINUTES: '1800',
   TWO_HOURS: '7200',
@@ -247,8 +255,8 @@ export const SECONDARY_ERROR_MESSAGES = {
 };
 
 export class CustomError extends Error {
-  type: any;
-  secondaryMessage: any;
+  type: string;
+  secondaryMessage: string;
   /**
    * @param {string} message
    * @param {string} type
@@ -261,23 +269,6 @@ export class CustomError extends Error {
 
   static MAX_RETRY = 'MAX_RETRY';
   static USER_NOT_FOUND = 'USER_NOT_FOUND';
-}
-
-class MissingParamError extends Error {
-  missedParams: any;
-  secondaryMessage: any;
-  /**
-   * @param {string[]} missedParams
-   * @param {string?=} secondaryMessage
-   */
-  constructor(missedParams, secondaryMessage) {
-    const msg = `Missing params ${missedParams
-      .map((p) => `"${p}"`)
-      .join(', ')} make sure you pass the parameters in URL`;
-    super(msg);
-    this.missedParams = missedParams;
-    this.secondaryMessage = secondaryMessage;
-  }
 }
 
 /**
@@ -317,29 +308,6 @@ export const measureText = (str, fontSize = 10) => {
       .reduce((cur, acc) => acc + cur) * fontSize
   );
 };
-
-/** @param {string} name */
-const lowercaseTrim = (name) => name.toLowerCase().trim();
-
-/**
- * @template T
- * @param {Array<T>} arr
- * @param {number} perChunk
- * @returns {Array<T>}
- */
-function chunkArray(arr, perChunk) {
-  return arr.reduce((resultArray, item, index) => {
-    const chunkIndex = Math.floor(index / perChunk);
-
-    if (!resultArray[chunkIndex]) {
-      resultArray[chunkIndex] = []; // start a new chunk
-    }
-
-    resultArray[chunkIndex].push(item);
-
-    return resultArray;
-  }, []);
-}
 
 export const getImageBase64FromURL = async (url: string) => {
   const imageURLData = await fetch(url);

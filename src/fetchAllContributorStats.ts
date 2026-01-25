@@ -1,6 +1,8 @@
 import axios from 'axios';
 import _ from 'lodash';
 
+import type { Repository, UserResponse } from './fetchContributorStats';
+
 const MAX_REPOS_PER_QUERY = 100;
 
 interface TimeRange {
@@ -10,7 +12,7 @@ interface TimeRange {
 
 interface RepoContribution {
   nameWithOwner: string;
-  repository: any;
+  repository: Repository;
   contributions: number;
 }
 
@@ -22,14 +24,18 @@ async function fetchContributionsForRange(
   range: TimeRange,
 ): Promise<RepoContribution[]> {
   const token = process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
-  const response = await axios({
-    url: 'https://api.github.com/graphql',
-    method: 'POST',
-    headers: {
-      Authorization: `token ${token}`,
-    },
-    validateStatus: (status) => status == 200,
-    data: {
+  const response = await axios.post<
+    UserResponse<{
+      contributionsCollection: {
+        commitContributionsByRepository: Array<{
+          contributions: { totalCount: number };
+          repository: Repository;
+        }>;
+      };
+    }>
+  >(
+    'https://api.github.com/graphql',
+    {
       query: `query {
         user(login: ${JSON.stringify(username)}) {
           contributionsCollection(from: "${range.from}", to: "${range.to}") {
@@ -64,7 +70,13 @@ async function fetchContributionsForRange(
         }
       }`,
     },
-  });
+    {
+      headers: {
+        Authorization: `token ${token}`,
+      },
+      validateStatus: (status) => status == 200,
+    },
+  );
 
   const commitContributionsByRepository =
     response.data.data.user.contributionsCollection.commitContributionsByRepository;
@@ -101,7 +113,7 @@ function splitTimeRange(range: TimeRange): TimeRange[] {
   } else if (diffMonths >= 2) {
     // Split into months
     const ranges: TimeRange[] = [];
-    let current = new Date(from);
+    const current = new Date(from);
 
     while (current < to) {
       const monthStart = new Date(current);
@@ -110,11 +122,10 @@ function splitTimeRange(range: TimeRange): TimeRange[] {
       monthEnd.setDate(0);
       monthEnd.setHours(23, 59, 59, 999);
 
-      if (monthEnd > to) {
-        ranges.push({ from: monthStart.toISOString(), to: range.to });
-      } else {
-        ranges.push({ from: monthStart.toISOString(), to: monthEnd.toISOString() });
-      }
+      ranges.push({
+        from: monthStart.toISOString(),
+        to: monthEnd > to ? range.to : monthEnd.toISOString(),
+      });
 
       current.setMonth(current.getMonth() + 1);
       current.setDate(1);
@@ -148,7 +159,9 @@ async function fetchContributionsWithSplitting(
 
     // Fetch each sub-range recursively
     const subResults = await Promise.all(
-      subRanges.map((subRange) => fetchContributionsWithSplitting(username, subRange, depth + 1)),
+      subRanges.map((subRange) =>
+        fetchContributionsWithSplitting(username, subRange, depth + 1),
+      ),
     );
 
     return subResults.flat();
@@ -181,14 +194,17 @@ export async function fetchAllContributorStats(username: string) {
         },
       },
     },
-  } = await axios({
-    url: 'https://api.github.com/graphql',
-    method: 'POST',
-    headers: {
-      Authorization: `token ${token}`,
-    },
-    validateStatus: (status) => status == 200,
-    data: {
+  } = await axios.post<
+    UserResponse<{
+      id: string;
+      name: string;
+      contributionsCollection: {
+        contributionYears: number[];
+      };
+    }>
+  >(
+    'https://api.github.com/graphql',
+    {
       query: `query {
           user(login: "${username}") {
             id
@@ -199,11 +215,17 @@ export async function fetchAllContributorStats(username: string) {
           }
         }`,
     },
-  });
+    {
+      headers: {
+        Authorization: `token ${token}`,
+      },
+      validateStatus: (status) => status == 200,
+    },
+  );
 
   // Fetch contributions for each year with automatic splitting
   const yearlyContributions = await Promise.all(
-    (contributionYears as number[]).map((year) =>
+    contributionYears.map((year) =>
       fetchContributionsWithSplitting(username, {
         from: `${year}-01-01T00:00:00Z`,
         to: `${year}-12-31T23:59:59Z`,

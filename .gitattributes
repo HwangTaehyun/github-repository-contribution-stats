@@ -1,1 +1,2 @@
-index.js -linguist-generated=true
+index.js linguist-generated
+action/dist/** linguist-generated
