@@ -40,7 +40,6 @@ jobs:
           output-file: github-contributor-stats.svg
           combine-all-yearly-contributions: 'true'
           hide-contributor-rank: 'false'
-          rate-limit-delay-ms: '100'
 
       - uses: actions4git/add-commit-push@v1
         continue-on-error: true
@@ -64,7 +63,6 @@ jobs:
 | `order-by` | Order by "stars" or "contributions" | No | `stars` |
 | `limit` | Max repositories to show (-1 for all) | No | `-1` |
 | `theme` | Theme name | No | `default` |
-| `rate-limit-delay-ms` | Delay between API calls (ms) | No | `100` |
 | `title-color` | Custom title color (hex) | No | - |
 | `text-color` | Custom text color (hex) | No | - |
 | `icon-color` | Custom icon color (hex) | No | - |
@@ -82,18 +80,6 @@ jobs:
 |--------|-------------|
 | `svg-path` | Path to the generated SVG file |
 
-## Rate Limiting
-
-The action includes intelligent rate limiting:
-
-- Adds configurable delay between API requests (`rate-limit-delay-ms`)
-- Monitors remaining API quota and waits when low
-- Automatically retries on rate limit errors
-- Logs progress every 10 repositories
-
-For ~340 repositories with `rate-limit-delay-ms: 100`:
-- Estimated time: ~35 seconds
-- Well within GitHub Actions timeout
 
 ## Building from Source
 

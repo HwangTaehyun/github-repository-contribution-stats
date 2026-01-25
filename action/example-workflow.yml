@@ -30,9 +30,6 @@ jobs:
           output-file: github-contributor-stats.svg
           combine-all-yearly-contributions: 'true'
           hide-contributor-rank: 'false'
-          # Rate limit delay: 100ms between API calls (safe for ~340 repos)
-          # Increase this if you hit rate limits
-          rate-limit-delay-ms: '100'
 
       - name: Commit and push if changed
         uses: actions4git/add-commit-push@v1
