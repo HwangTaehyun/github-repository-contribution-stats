@@ -1,0 +1,10 @@
+**/node_modules
+**/dist
+package-lock.json
+yarn.lock.json
+# output by webpack
+/index.js
+
+# too many changes right now, can uncomment and review changes if wanted
+action/README.md
+themes/README.md
