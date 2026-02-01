@@ -47,8 +47,8 @@ app.get('/api', async (req, res) => {
 
   try {
     const result = await (combine_all_yearly_contributions
-      ? fetchAllContributorStats(username)
-      : fetchContributorStats(username));
+      ? fetchAllContributorStats(username as string)
+      : fetchContributorStats(username as string));
     const name = result.name;
     const contributorStats = result.repositoriesContributedTo.nodes;
 
