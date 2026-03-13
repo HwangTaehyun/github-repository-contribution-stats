@@ -75,7 +75,7 @@ Fork the repository and click the deploy button below.
 Vercel will ask for the environment variable during setup.
 
 [![Deploy with
-Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/HwangTaehyun/github-contributor-stats&env=GITHUB_PERSONAL_ACCESS_TOKEN&envDescription=GitHub%20Personal%20Access%20Token%20with%20public_repo%20scope&repository-name=repository-name)
+Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/HwangTaehyun/github-contributor-stats&env=GITHUB_PERSONAL_ACCESS_TOKEN&envDescription=GitHub%20Personal%20Access%20Token%20with%20public_repo%20scope&repository-name=github-contributor-stats)
 
 ------------------------------------------------------------------------
 
@@ -125,7 +125,7 @@ dashboard.
 
 After deployment, open this URL in your browser:
 
-    https://<your-project>.vercel.app/api?username=<your-github-username>
+    <deployed_url>/api?username=<your-github-username>
 
 If everything is working, you should see an SVG card with your
 contribution stats.
