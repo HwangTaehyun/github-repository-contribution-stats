@@ -64,7 +64,7 @@ GitHub only shows the token once.
 
 ## Deploying
 
-There are a few ways to deploy this on Vercel. Use whichever you prefer.
+There are a few ways to deploy thishttps://github.com/wyMinLwin on Vercel. Use whichever you prefer.
 
 ------------------------------------------------------------------------
 
@@ -75,7 +75,7 @@ Fork the repository and click the deploy button below.
 Vercel will ask for the environment variable during setup.
 
 [![Deploy with
-Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/HwangTaehyun/github-contributor-stats&env=GITHUB_PERSONAL_ACCESS_TOKEN&envDescription=GitHub%20Personal%20Access%20Token%20with%20public_repo%20scope&repository-name=github-contributor-stats)
+Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/HwangTaehyun/github-repository-contribution-stats&env=GITHUB_PERSONAL_ACCESS_TOKEN&envDescription=GitHub%20Personal%20Access%20Token%20with%20public_repo%20scope&repository-name=github-repository-contribution-stats)
 
 ------------------------------------------------------------------------
 
