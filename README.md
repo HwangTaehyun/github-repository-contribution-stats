@@ -101,6 +101,10 @@ However, if you are using this project and are happy with it or just want to enc
 
 Thanks! :heart:
 
+## Deploy Your Own Instance
+
+Want to run your own? Check out the [self-deploy guide](./SELF_DEPLOY.md).
+
 ## Contribution
 
 Contributions are welcome!
