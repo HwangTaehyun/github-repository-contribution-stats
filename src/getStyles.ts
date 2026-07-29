@@ -86,7 +86,7 @@ export const getStyles = ({ titleColor, textColor, iconColor, show_icons, progre
     .bold { font-weight: 700 }
     .icon {
       fill: ${iconColor};
-      display: ${!!show_icons ? 'block' : 'none'};
+      display: ${show_icons ? 'block' : 'none'};
     }
     
     .rank-circle-rim {

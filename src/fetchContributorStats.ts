@@ -7,8 +7,9 @@
  * file that was distributed with this source code.
  */
 
-import * as dotenv from 'dotenv';
 import axios from 'axios';
+
+import { ParsedQuery } from './common/types';
 
 /**
  * The Fetch Contributor Stats Function.
@@ -20,7 +21,7 @@ import axios from 'axios';
  *
  * @return {*}
  */
-const fetchContributorStats = async (username) => {
+const fetchContributorStats = async (username: ParsedQuery) => {
   try {
     const response = await axios({
       url: 'https://api.github.com/graphql',
